@@ -410,8 +410,27 @@
         toSelect.add(opt2);
       }
 
-      fromSelect.value = localStorage.getItem("fromCurrency") || "USD";
-      toSelect.value = localStorage.getItem("toCurrency") || "GBP";
+      // Restore saved selections, fall back to sensible defaults if not found
+      const savedFrom = localStorage.getItem("fromCurrency") || "GBP";
+      const savedTo   = localStorage.getItem("toCurrency")   || "EUR";
+
+      const availableCodes = Object.keys(allCurrencies);
+
+      const resolvedFrom = availableCodes.includes(savedFrom) ? savedFrom : availableCodes[0];
+
+      // Pick a valid 'to' that is different from 'from'
+      const resolvedTo = availableCodes.includes(savedTo) && savedTo !== resolvedFrom
+        ? savedTo
+        : availableCodes.find(c => c !== resolvedFrom) || availableCodes[0];
+
+      // Set both values directly on the DOM without triggering change events
+      fromSelect.value = resolvedFrom;
+      toSelect.value   = resolvedTo;
+
+      // Persist the corrected values back to localStorage
+      localStorage.setItem("fromCurrency", resolvedFrom);
+      localStorage.setItem("toCurrency", resolvedTo);
+
       updateRateLabels();
       loadSavedRate();
     }
@@ -445,7 +464,11 @@
       const from = fromSelect.value;
       const to = toSelect.value;
 
-      console.log("fetchLiveExchangeRate called — from:", from, "to:", to);
+      if (!from || !to) {
+        outputBox.textContent = "Please select both From and To currencies.";
+        noteEl.textContent = "";
+        return;
+      }
 
       if (from === to) {
         outputBox.textContent = "Please select two different currencies.";
@@ -457,34 +480,31 @@
       fetchRateBtn.textContent = "Fetching Rate...";
 
       try {
-        // Try fetching with 'from' as the base currency first
         let rate = null;
-        console.log("Fetching:", `https://open.er-api.com/v6/latest/${from}`);
+
+        // First attempt: use 'from' as the base
         let response = await fetch(`https://open.er-api.com/v6/latest/${from}`);
         let data = await response.json();
-        console.log("API response (from as base):", data);
 
-        if (data && data.result === "success" && data.rates && data.rates[to]) {
+        if (data && data.result === "success" && data.rates && data.rates[to] !== undefined) {
           rate = data.rates[to];
         } else {
-          // Fallback: try 'to' as the base and invert the result
-          console.log("Fallback: fetching", `https://open.er-api.com/v6/latest/${to}`);
+          // Fallback: use 'to' as the base and invert
           response = await fetch(`https://open.er-api.com/v6/latest/${to}`);
           data = await response.json();
-          console.log("API response (to as base):", data);
 
-          if (data && data.result === "success" && data.rates && data.rates[from]) {
+          if (data && data.result === "success" && data.rates && data.rates[from] !== undefined) {
             rate = 1 / data.rates[from];
           }
         }
 
-        console.log("Resolved rate:", rate);
-
-        if (rate) {
-          manualRateForward.value = rate.toFixed(4);
+        if (rate !== null && rate > 0) {
+          // Use enough decimal places for small-value currencies like VND, LAK
+          const decimals = rate < 0.01 ? 6 : rate < 0.1 ? 5 : 4;
+          manualRateForward.value = rate.toFixed(decimals);
           manualRateInverse.value = (1 / rate).toFixed(4);
           convertCurrency();
-          noteEl.textContent = `Live rate fetched: 1 ${from} = ${rate.toFixed(4)} ${to}`;
+          noteEl.textContent = `Live rate fetched: 1 ${from} = ${rate.toFixed(decimals)} ${to}`;
         } else {
           outputBox.textContent = "—";
           noteEl.textContent = `Live rate not available for ${from} → ${to}. Please enter the rate manually.`;
