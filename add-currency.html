@@ -419,7 +419,7 @@
 
             // 1. Record purchase in AWS DynamoDB via API Gateway
             try {
-              await fetch('https://teiit1vla3.execute-api.eu-west-2.amazonaws.com/purchases/prod', {
+              await fetch('https://teiit1vla3.execute-api.eu-west-2.amazonaws.com/prod/purchases', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json'
