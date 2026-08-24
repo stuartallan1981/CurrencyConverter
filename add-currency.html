@@ -5,7 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Add Additional Currency Payment - Holiday Currency Converter</title>
   <!-- PayPal SDK Script -->
-  <script src="https://www.paypal.com/sdk/js?client-id=BAAdiRJEBPdk02GHl-OizDJMk9CmarhxIhLMxmiIJrwHSRGO8-eWXfmcQbPZiyNEVLivw4EqTfMLXY4yD0&components=hosted-buttons&disable-funding=venmo&currency=GBP"></script>
+  <!-- Change this line at the top of <head> -->
+  <script src="https://www.paypal.com/sdk/js?client-id=ARuBBEN3SyS0KbYgJ20v_KjOq-3tZ3MFbKSzKthU9NkrxKVg7nDXK-9bAOw3lDZz-L2n6-EceMBF3hsP&components=hosted-buttons&disable-funding=venmo&currency=GBP"></script>
+
+<!-- SANDBOX: client-id=ARuBBEN3SyS0KbYgJ20v_KjOq-3tZ3MFbKSzKthU9NkrxKVg7nDXK-9bAOw3lDZz-L2n6-EceMBF3hsP -->
+<!-- LIVE:    client-id=BAAdiRJEBPdk02GHl-OizDJMk9CmarhxIhLMxmiIJrwHSRGO8-eWXfmcQbPZiyNEVLivw4EqTfMLXY4yD0 -->
+
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -154,12 +160,16 @@
 
       <!-- Container for custom JS Smart Buttons -->
       <div id="paypal-button-container"></div>
-      <div id="paypal-container-2LY9HVYP4BJC6"></div>
+<!-- Comment this out during sandbox testing -->
+<!--
+<div id="paypal-container-2LY9HVYP4BJC6"></div>
 <script>
   paypal.HostedButtons({
     hostedButtonId: "2LY9HVYP4BJC6",
   }).render("#paypal-container-2LY9HVYP4BJC6")
 </script>
+-->
+
 
       <button type="button" class="back-btn" onclick="window.location.href='index.html'">Cancel & Return</button>
     </form>
