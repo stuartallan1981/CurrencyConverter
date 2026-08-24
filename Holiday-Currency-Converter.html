@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Holiday Currency Converter</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .converter {
+      background: #fff;
+      padding: 25px 30px;
+      border-radius: 10px;
+      box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+      width: 440px;
+      text-align: center;
+      overflow-y: auto;
+      max-height: 95vh;
+    }
+
+    /* Title box */
+    .title-box {
+      background-color: #007bff;
+      color: #fff;
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      font-size: 22px;
+      font-weight: bold;
+      text-decoration: underline;
+      letter-spacing: 0.5px;
+    }
+
+    select,
+    input,
+    button {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      text-align: left;
+      margin-top: 10px;
+    }
+
+    #fromCurrencyLabel {
+      margin-top: 20px;
+    }
+
+    #outputBox {
+      margin-top: 10px;
+      background-color: #e8f4ff;
+      border: 2px solid #007bff;
+      padding: 15px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 18px;
+      color: #007bff;
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    #note {
+      font-size: 13px;
+      color: #555;
+      margin-top: 8px;
+    }
+
+    .manual-rate {
+      margin-top: 20px;
+      background: #fff7e6;
+      border: 1px solid #ffcf88;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+    }
+
+    .add-currency {
+      margin-top: 20px;
+      background: #f7fbff;
+      padding: 15px;
+      border: 1px solid #d0e7ff;
+      border-radius: 8px;
+    }
+
+    .manual-rate h3 {
+      color: #b36b00;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .row label {
+      flex: 1;
+      text-align: left;
+      font-size: 14px;
+      white-space: nowrap;
+      font-weight: normal;
+    }
+
+    /* widened bought-at input */
+    .row input[type="number"] {
+      width: 200px;
+      margin-left: 10px;
+    }
+
+    .add-currency .row input {
+      flex: 1;
+      width: 48%;
+    }
+
+    #inverseContainer {
+      display: none;
+    }
+
+    /* Save Button */
+    #saveButton {
+      background-color: #fff7e6;
+      color: #333;
+      border: none;
+      box-shadow: none;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 10px;
+      transition: background 0.2s ease;
+    }
+
+    #saveButton:hover {
+      background-color: #ffe9bf;
+    }
+
+    /* Swap Button */
+    #swapButton {
+      background-color: #fff;
+      color: #333;
+      border: none;
+      box-shadow: none;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 10px;
+      transition: background 0.2s ease;
+    }
+
+    #swapButton:hover {
+      background-color: #f4f4f4;
+    }
+  </style>
+</head>
+<body>
+  <div class="converter">
+    <div class="title-box">Holiday Currency Converter</div>
+
+    <label for="amount"><b>Amount to Convert:</b></label>
+    <input type="number" id="amount" placeholder="e.g. 100" step="0.01">
+    <div id="outputBox">Converted amount will appear here</div>
+    <div id="note"></div>
+
+    <label for="fromCurrency" id="fromCurrencyLabel"><b>From Currency:</b></label>
+    <select id="fromCurrency"></select>
+
+    <label for="toCurrency"><b>To Currency:</b></label>
+    <select id="toCurrency"></select>
+
+    <button id="swapButton" onclick="swapCurrencies()">🔄 Swap Currencies</button>
+
+    <div class="manual-rate">
+      <h3>Exchange rate currency bought at:</h3>
+      <div class="row">
+        <label id="forwardLabel">From → To:</label>
+        <input type="number" id="manualRateForward" placeholder="e.g. 1.25" step="0.0001">
+      </div>
+      <div class="row" id="inverseContainer">
+        <label id="inverseLabel">To → From:</label>
+        <input type="number" id="manualRateInverse" placeholder="e.g. 0.80" step="0.0001">
+      </div>
+      <button id="saveButton" onclick="saveSettings()">💾 Save</button>
+    </div>
+
+    <div class="add-currency">
+      <h3>Add Custom Currency</h3>
+      <div class="row">
+        <input type="text" id="customCode" placeholder="Code (e.g. INR)" maxlength="3">
+        <input type="text" id="customName" placeholder="Name (e.g. Indian Rupee)">
+      </div>
+      <button onclick="addCustomCurrency()">Add Currency</button>
+    </div>
+  </div>
+
+  <script>
+    const fromSelect=document.getElementById("fromCurrency");
+    const toSelect=document.getElementById("toCurrency");
+    const outputBox=document.getElementById("outputBox");
+    const noteEl=document.getElementById("note");
+    const manualRateForward=document.getElementById("manualRateForward");
+    const manualRateInverse=document.getElementById("manualRateInverse");
+    const amountInput=document.getElementById("amount");
+    const forwardLabel=document.getElementById("forwardLabel");
+    const inverseLabel=document.getElementById("inverseLabel");
+
+    const currencies={
+      GBP: "British Pound",      
+      EUR: "Euro",  
+      USD: "US Dollar",
+      AUD: "Australian Dollar",
+      CAD: "Canadian Dollar",
+      CHF: "Swiss Franc",
+      CNY: "Chinese Yuan",
+      HKD: "Hong Kong Dollar",
+      JPY: "Japanese Yen",
+      KRW: "South Korean Won",
+      NZD: "New Zealand Dollar",
+      SGD: "Singapore Dollar",
+      ZAR: "South African Rand"
+    };
+
+    function populateSelects(){
+      const savedCurrencies=JSON.parse(localStorage.getItem("customCurrencies"))||{};
+      const allCurrencies={...currencies,...savedCurrencies};
+
+      for(const [code,name] of Object.entries(allCurrencies)){
+        const opt1=new Option(`${code} - ${name}`,code);
+        const opt2=new Option(`${code} - ${name}`,code);
+        fromSelect.add(opt1);
+        toSelect.add(opt2);
+      }
+
+      fromSelect.value=localStorage.getItem("fromCurrency")||"GBP";
+      toSelect.value=localStorage.getItem("toCurrency")||"USD";
+      updateRateLabels();
+      loadSavedRate();
+    }
+
+    function currencyKey(){
+      return `${fromSelect.value}_${toSelect.value}`;
+    }
+
+    function loadSavedRate(){
+      const savedRates=JSON.parse(localStorage.getItem("savedRates"))||{};
+      const key=currencyKey();
+      if(savedRates[key]){
+        const rate=savedRates[key];
+        manualRateForward.value=parseFloat(rate).toFixed(4);
+        manualRateInverse.value=(1/rate).toFixed(4);
+      }else{
+        manualRateForward.value="";
+        manualRateInverse.value="";
+      }
+    }
+
+    function updateRateLabels(){
+      forwardLabel.textContent=`From (${fromSelect.value}) → To (${toSelect.value}):`;
+      inverseLabel.textContent=`To (${toSelect.value}) → From (${fromSelect.value}):`;
+      loadSavedRate();
+    }
+
+    function convertCurrency(){
+      const from=fromSelect.value,to=toSelect.value,
+            amount=parseFloat(amountInput.value),
+            rateForward=parseFloat(manualRateForward.value);
+
+      if(isNaN(amount)||amount<=0){
+        outputBox.textContent="—";noteEl.textContent="";return;
+      }
+      if(from===to){
+        outputBox.textContent="Please select two different currencies.";noteEl.textContent="";return;
+      }
+      if(isNaN(rateForward)||rateForward<=0){
+        outputBox.textContent="Enter a valid exchange rate.";noteEl.textContent="";return;
+      }
+      const result=amount*rateForward;
+      outputBox.textContent=`${result.toFixed(2)} ${to}`;
+      noteEl.textContent=`Using rate saved for ${from} → ${to}: 1 ${from} = ${rateForward.toFixed(4)} ${to}`;
+    }
+
+    function saveSettings(rate){
+      const rateForward=rate?rate:parseFloat(manualRateForward.value);
+      if(isNaN(rateForward)||rateForward<=0){
+        alert("Please enter a valid exchange rate to save.");
+        return;
+      }
+      const savedRates=JSON.parse(localStorage.getItem("savedRates"))||{};
+      savedRates[currencyKey()]=rateForward;
+      localStorage.setItem("savedRates",JSON.stringify(savedRates));
+
+      localStorage.setItem("fromCurrency",fromSelect.value);
+      localStorage.setItem("toCurrency",toSelect.value);
+
+      alert(`✅ Saved rate for ${fromSelect.value} → ${toSelect.value}!`);
+    }
+
+    manualRateForward.addEventListener("input",()=>{
+      const val=parseFloat(manualRateForward.value);
+      manualRateInverse.value=!isNaN(val)&&val>0?(1/val).toFixed(4):"";
+      convertCurrency();
+    });
+
+    amountInput.addEventListener("input",convertCurrency);
+    fromSelect.addEventListener("change",()=>{
+      updateRateLabels();convertCurrency();
+    });
+    toSelect.addEventListener("change",()=>{
+      updateRateLabels();convertCurrency();
+    });
+
+    function swapCurrencies(){
+      const tempFrom=fromSelect.value;
+      fromSelect.value=toSelect.value;
+      toSelect.value=tempFrom;
+
+      const currentRate=parseFloat(manualRateForward.value);
+      let invertedRate=null;
+
+      if(!isNaN(currentRate)&&currentRate>0){
+        invertedRate=1/currentRate;
+        manualRateForward.value=invertedRate.toFixed(4);
+        manualRateInverse.value=(1/invertedRate).toFixed(4);
+        const savedRates=JSON.parse(localStorage.getItem("savedRates"))||{};
+        savedRates[currencyKey()]=invertedRate;
+        localStorage.setItem("savedRates",JSON.stringify(savedRates));
+      }
+
+      updateRateLabels();
+      convertCurrency();
+
+      if(invertedRate){
+        saveSettings(invertedRate);
+      }
+    }
+
+    function addCustomCurrency(){
+      const code=document.getElementById("customCode").value.trim().toUpperCase();
+      const name=document.getElementById("customName").value.trim();
+
+      if(!code||!name){alert("Please enter both code and name.");return;}
+      if(code.length!==3){alert("Currency code must be 3 letters (e.g., USD, GBP).");return;}
+
+      const savedCurrencies=JSON.parse(localStorage.getItem("customCurrencies"))||{};
+      savedCurrencies[code]=name;
+      localStorage.setItem("customCurrencies",JSON.stringify(savedCurrencies));
+
+      const text=`${code} - ${name}`;
+      fromSelect.add(new Option(text,code));
+      toSelect.add(new Option(text,code));
+
+      document.getElementById("customCode").value="";
+      document.getElementById("customName").value="";
+      alert(`Currency "${text}" added and saved!`);
+      updateRateLabels();
+    }
+
+    populateSelects();
+    convertCurrency();
+  </script>
+</body>
+</html>

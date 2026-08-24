@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In - Holiday Currency Converter</title>
+  <!-- Amazon Cognito Identity SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.7/dist/amazon-cognito-identity.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: #fff;
+      padding: 25px 30px;
+      border-radius: 10px;
+      box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+      width: 440px;
+      text-align: center;
+      overflow-y: auto;
+      max-height: 95vh;
+    }
+
+    .title-dropdown-container {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: -10px;
+      margin-bottom: 15px;
+    }
+
+    .title-dropdown-container select {
+      width: auto;
+      margin: 0;
+      padding: 6px 12px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .title-box {
+      background-color: #007bff;
+      color: #fff;
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      font-size: 22px;
+      font-weight: bold;
+      text-decoration: underline;
+      letter-spacing: 0.5px;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      text-align: left;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 15px;
+      transition: background 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .status-msg {
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 13px;
+      margin-top: 15px;
+      display: none;
+      text-align: left;
+    }
+
+    .status-msg.error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .status-msg.success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .nav-link-box {
+      margin-top: 15px;
+      font-size: 14px;
+    }
+
+    .nav-link-box a {
+      color: #007bff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .nav-link-box a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="title-dropdown-container">
+      <select id="titleDropdown" onchange="navigateToPage(this.value)">
+        <option value="signin.html">Sign-In</option>        
+        <option value="index.html">Home</option>
+        <option value="contact.html">Contact us</option>
+      </select>
+    </div>
+
+    <div class="title-box">Sign In</div>
+
+    <div id="statusMessage" class="status-msg"></div>
+
+    <form id="signInForm" onsubmit="handleSignIn(event)">
+      <label for="username">Email Address</label>
+      <input type="email" id="username" placeholder="name@example.com" required>
+
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="Enter password" required>
+
+      <button type="submit">Sign In</button>
+    </form>
+
+    <div class="nav-link-box">
+      Need an account? <a href="register.html">Create one here</a>
+    </div>
+  </div>
+
+  <script>
+    // Config: Replace these with your Amazon Cognito User Pool parameters
+    const poolData = {
+      UserPoolId: 'eu-west-2_BY54tpvV0', // e.g., 'us-east-1_XXXXXXXXX'
+      ClientId: '57hfik5lgckcarpu3qjoojmepf'       // e.g., '1h2j3k4l5m6n7o8p9q'
+    };
+
+    let userPool;
+    if (typeof AmazonCognitoIdentity !== 'undefined') {
+      userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+    }
+
+    function navigateToPage(url) {
+      if (url) {
+        window.location.href = url;
+      }
+    }
+
+    function showStatus(message, isError = false) {
+      const statusEl = document.getElementById("statusMessage");
+      statusEl.textContent = message;
+      statusEl.className = "status-msg " + (isError ? "error" : "success");
+      statusEl.style.display = "block";
+    }
+
+    function handleSignIn(event) {
+      event.preventDefault();
+
+      if (!userPool || poolData.UserPoolId === 'YOUR_USER_POOL_ID') {
+        showStatus("Please configure your AWS Cognito UserPoolId and ClientId in signin.html script section.", true);
+        return;
+      }
+
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value;
+
+      const authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails({
+        Username: username,
+        Password: password
+      });
+
+      const userData = {
+        Username: username,
+        Pool: userPool
+      };
+
+      const cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+
+      cognitoUser.authenticateUser(authenticationDetails, {
+        onSuccess: function (result) {
+          const idToken = result.getIdToken().getJwtToken();
+          const accessToken = result.getAccessToken().getJwtToken();
+
+          // Store authentication tokens into LocalStorage
+          localStorage.setItem("cognitoIdToken", idToken);
+          localStorage.setItem("cognitoAccessToken", accessToken);
+
+          showStatus("✅ Signed in successfully! Redirecting to Home page...");
+          setTimeout(() => {
+            window.location.href = "index.html";
+          }, 1500);
+        },
+        onFailure: function (err) {
+          showStatus(err.message || JSON.stringify(err), true);
+        }
+      });
+    }
+  </script>
+</body>
+</html>

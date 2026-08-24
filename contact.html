@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact Us - Holiday Currency Converter</title>
+  <style>
+      .top-nav {
+          display: flex;
+          justify-content: flex-end;
+          margin-bottom: 25px;
+          padding-bottom: 15px;
+          border-bottom: 1px solid #eaeaea;
+      }
+      .nav-link {
+          text-decoration: none;
+          color: #007bff;
+          font-weight: 500;
+          font-size: 1.05em;
+          transition: color 0.2s ease;
+      }
+      .nav-link:hover {
+          color: #0056b3;
+          text-decoration: underline;
+      }
+      .nav-link.active {
+          color: #333;
+          font-weight: bold;
+          pointer-events: none;
+      }
+    
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .converter {
+      background: #fff;
+      padding: 25px 30px;
+      border-radius: 10px;
+      box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+      width: 440px;
+      text-align: center;
+      overflow-y: auto;
+      max-height: 95vh;
+    }
+
+    /* Title box */
+    .title-box {
+      background-color: #007bff;
+      color: #fff;
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      font-size: 22px;
+      font-weight: bold;
+      text-decoration: underline;
+      letter-spacing: 0.5px;
+    }
+
+    .title-dropdown-container {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: -10px;
+      margin-bottom: 15px;
+    }
+
+    .title-dropdown-container select {
+      width: auto;
+      margin: 0;
+      padding: 6px 12px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    select,
+    input,
+    textarea,
+    button {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      text-align: left;
+      margin-top: 10px;
+    }
+
+    .contact-intro {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 15px;
+      text-align: left;
+    }
+
+    /* Primary button matching index.html structure */
+    .submit-btn {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 15px;
+      transition: background-color 0.2s ease;
+    }
+
+    .submit-btn:hover {
+      background-color: #0056b3;
+    }
+
+    /* Footer Styles matching index.html */
+    .gallery-footer {
+      margin-top: 25px;
+      padding-top: 15px;
+      border-top: 1px solid #eaeaea;
+      text-align: center;
+      font-size: 0.9em;
+      color: #555;
+    }
+    .copyright {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="converter">
+    <div class="title-dropdown-container">
+      <select id="titleDropdown" onchange="navigateToPage(this.value)">
+        <option value="contact.html">Contact us</option>        
+        <option value="index.html">Home</option>
+        <option value="register.html">Register</option>
+        <option value="signin.html">Sign-In</option>
+        <option value="add-currency.html">Add Currency (£0.99)</option>
+      </select>
+    </div>
+
+    <div class="title-box">Contact Us</div>
+
+    <div class="contact-intro">
+      <p>Have questions about the holiday currency converter or adding custom currencies? Send us a message below.</p>
+    </div>
+
+    <!-- Contact Form Content -->
+    <form id="contact-form">
+      <label for="name"><b>Name:</b></label>
+      <input type="text" id="name" name="name" placeholder="Your name" required>
+
+      <label for="email"><b>Email:</b></label>
+      <input type="email" id="email" name="email" placeholder="Your email address" required>
+
+      <label for="message"><b>Message:</b></label>
+      <textarea id="message" name="message" rows="4" placeholder="How can we help?" required></textarea>
+
+      <button type="submit" class="submit-btn">✉️ Send Message</button>
+    </form>
+  
+    <footer class="gallery-footer">
+      <div class="copyright">
+        <p></p>
+        &copy; 2026 S Allan. All rights reserved.
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    function navigateToPage(url) {
+      if (url) {
+        window.location.href = url;
+      }
+    }
+
+    const API_BASE = 'https://teiit1vla3.execute-api.eu-west-2.amazonaws.com/prod';
+    document.getElementById('contact-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        message: document.getElementById('message').value
+      };
+
+      try {
+        const response = await fetch(`${API_BASE}/contact`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData)
+        });
+
+        if (response.ok) {
+          alert('Thank You! Message sent successfully!');
+          document.getElementById('contact-form').reset();
+        } else {
+          alert('Failed to send message. Please try again.');
+        }
+      } catch (err) {
+        alert('Error connecting to the service.');
+      }
+    });
+  </script>
+</body>
+</html>
