@@ -4,13 +4,28 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Add Additional Currency Payment - Holiday Currency Converter</title>
-  <!-- PayPal SDK Script -->
-  <!-- Change this line at the top of <head> -->
-  <script src="https://www.paypal.com/sdk/js?client-id=ARuBBEN3SyS0KbYgJ20v_KjOq-3tZ3MFbKSzKthU9NkrxKVg7nDXK-9bAOw3lDZz-L2n6-EceMBF3hsP&components=hosted-buttons&disable-funding=venmo&currency=GBP"></script>
 
-<!-- SANDBOX: client-id=ARuBBEN3SyS0KbYgJ20v_KjOq-3tZ3MFbKSzKthU9NkrxKVg7nDXK-9bAOw3lDZz-L2n6-EceMBF3hsP -->
-<!-- LIVE:    client-id=BAAdiRJEBPdk02GHl-OizDJMk9CmarhxIhLMxmiIJrwHSRGO8-eWXfmcQbPZiyNEVLivw4EqTfMLXY4yD0 -->
+  <!--
+  ============================================================
+  PAYPAL SDK — SWITCH BETWEEN SANDBOX AND LIVE HERE
+  ============================================================
+  SANDBOX (testing — no real money):
+    client-id=ARuBBEN3SyS0KbYgJ20v_KjOq-3tZ3MFbKSzKthU9NkrxKVg7nDXK-9bAOw3lDZz-L2n6-EceMBF3hsP
 
+  LIVE (real payments):
+    client-id=BAAdiRJEBPdk02GHl-OizDJMk9CmarhxIhLMxmiIJrwHSRGO8-eWXfmcQbPZiyNEVLivw4EqTfMLXY4yD0
+
+  To switch: replace the client-id value in the script src below.
+  components=buttons is required for Smart Buttons to render.
+  ============================================================
+  -->
+
+  <!-- CURRENTLY ACTIVE: SANDBOX -->
+  <script src="https://www.paypal.com/sdk/js?client-id=ARuBBEN3SyS0KbYgJ20v_KjOq-3tZ3MFbKSzKthU9NkrxKVg7nDXK-9bAOw3lDZz-L2n6-EceMBF3hsP&components=buttons&disable-funding=venmo&currency=GBP"></script>
+
+  <!-- TO GO LIVE: replace the script tag above with this one:
+  <script src="https://www.paypal.com/sdk/js?client-id=BAAdiRJEBPdk02GHl-OizDJMk9CmarhxIhLMxmiIJrwHSRGO8-eWXfmcQbPZiyNEVLivw4EqTfMLXY4yD0&components=buttons,hosted-buttons&disable-funding=venmo&currency=GBP"></script>
+  -->
 
   <style>
     body {
@@ -125,12 +140,6 @@
     #paypal-button-container {
       margin-top: 12px;
     }
-
-    /* Target hosted button title and price labels directly */
-    #paypal-container-2LY9HVYP4BJC6 div {
-      color: #ffffff !important;
-      font-size: 1px !important;
-    }
   </style>
 </head>
 <body>
@@ -138,7 +147,7 @@
   <div class="container">
     <div class="title-dropdown-container">
       <select id="titleDropdown" onchange="navigateToPage(this.value)">
-        <option value="add-currency.html">Add Currency (£0.99)</option>        
+        <option value="add-currency.html">Add Currency (£0.99)</option>
         <option value="index.html">Home</option>
         <option value="contact.html">Contact us</option>
       </select>
@@ -158,16 +167,30 @@
 
       <div class="section-title">2. Payment via PayPal</div>
 
-      <!-- Container for custom JS Smart Buttons -->
+      <!--
+        SANDBOX: Smart Buttons render here using the sandbox client-id above.
+        Log in with your PayPal sandbox Personal buyer account to test.
+        Find sandbox accounts at: developer.paypal.com > Sandbox > Accounts
+
+        LIVE: Smart Buttons still render here — just swap the client-id in the
+        script tag at the top. The hosted button block below can also be
+        re-enabled for live if preferred.
+      -->
       <div id="paypal-button-container"></div>
-<!-- Comment this out during sandbox testing -->
+
+      <!--
+      ============================================================
+      HOSTED BUTTON — LIVE ONLY
+      Re-enable this block when going live (swap SDK script tag too).
+      Hosted buttons do NOT work with sandbox.
+      ============================================================
       <div id="paypal-container-2LY9HVYP4BJC6"></div>
       <script>
         paypal.HostedButtons({
           hostedButtonId: "2LY9HVYP4BJC6",
-        }).render("#paypal-container-2LY9HVYP4BJC6")
+        }).render("#paypal-container-2LY9HVYP4BJC6");
       </script>
-
+      -->
 
       <button type="button" class="back-btn" onclick="window.location.href='index.html'">Cancel & Return</button>
     </form>
@@ -177,7 +200,7 @@
         <p></p>
         &copy; 2026 S Allan. All rights reserved.
       </div>
-    </footer>    
+    </footer>
   </div>
 
   <script>
@@ -361,6 +384,8 @@
     });
 
     // Initialize PayPal Smart Buttons
+    // Works for both sandbox and live — button appearance and flow are identical.
+    // Use sandbox buyer account credentials when testing.
     if (window.paypal) {
       paypal.Buttons({
         style: {
@@ -392,7 +417,7 @@
             const selectedData = JSON.parse(currencySelect.value);
             const userId = getCognitoUserId();
 
-            // 1. Log purchase details to AWS DynamoDB via API Gateway route
+            // 1. Record purchase in AWS DynamoDB via API Gateway
             try {
               await fetch('https://teiit1vla3.execute-api.eu-west-2.amazonaws.com/purchases/prod', {
                 method: 'POST',
