@@ -445,6 +445,8 @@
       const from = fromSelect.value;
       const to = toSelect.value;
 
+      console.log("fetchLiveExchangeRate called — from:", from, "to:", to);
+
       if (from === to) {
         outputBox.textContent = "Please select two different currencies.";
         noteEl.textContent = "";
@@ -457,20 +459,26 @@
       try {
         // Try fetching with 'from' as the base currency first
         let rate = null;
+        console.log("Fetching:", `https://open.er-api.com/v6/latest/${from}`);
         let response = await fetch(`https://open.er-api.com/v6/latest/${from}`);
         let data = await response.json();
+        console.log("API response (from as base):", data);
 
         if (data && data.result === "success" && data.rates && data.rates[to]) {
           rate = data.rates[to];
         } else {
           // Fallback: try 'to' as the base and invert the result
+          console.log("Fallback: fetching", `https://open.er-api.com/v6/latest/${to}`);
           response = await fetch(`https://open.er-api.com/v6/latest/${to}`);
           data = await response.json();
+          console.log("API response (to as base):", data);
 
           if (data && data.result === "success" && data.rates && data.rates[from]) {
             rate = 1 / data.rates[from];
           }
         }
+
+        console.log("Resolved rate:", rate);
 
         if (rate) {
           manualRateForward.value = rate.toFixed(4);
