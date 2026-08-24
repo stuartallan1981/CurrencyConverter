@@ -455,20 +455,31 @@
       fetchRateBtn.textContent = "Fetching Rate...";
 
       try {
-        const response = await fetch(`https://open.er-api.com/v6/latest/${from}`);
-        const data = await response.json();
+        // Try fetching with 'from' as the base currency first
+        let rate = null;
+        let response = await fetch(`https://open.er-api.com/v6/latest/${from}`);
+        let data = await response.json();
 
-        if (data && data.rates && data.rates[to]) {
-          const rate = data.rates[to];
-          
-          // Prepopulate manual exchange rate input box with live rate
+        if (data && data.result === "success" && data.rates && data.rates[to]) {
+          rate = data.rates[to];
+        } else {
+          // Fallback: try 'to' as the base and invert the result
+          response = await fetch(`https://open.er-api.com/v6/latest/${to}`);
+          data = await response.json();
+
+          if (data && data.result === "success" && data.rates && data.rates[from]) {
+            rate = 1 / data.rates[from];
+          }
+        }
+
+        if (rate) {
           manualRateForward.value = rate.toFixed(4);
           manualRateInverse.value = (1 / rate).toFixed(4);
-
           convertCurrency();
+          noteEl.textContent = `Live rate fetched: 1 ${from} = ${rate.toFixed(4)} ${to}`;
         } else {
           outputBox.textContent = "—";
-          noteEl.textContent = `Unable to fetch live rates for ${from} to ${to}. Please enter rate manually.`;
+          noteEl.textContent = `Live rate not available for ${from} → ${to}. Please enter the rate manually.`;
         }
       } catch (error) {
         console.error("Exchange rate error:", error);
