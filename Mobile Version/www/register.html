@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Register - Holiday Currency Converter</title>
+  <link rel="stylesheet" href="css/app.css" />
+  <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.7/dist/amazon-cognito-identity.min.js"></script>
+</head>
+<body>
+
+  <div class="page-wrapper">
+    <!-- Top nav injected by nav.js -->
+
+    <div class="main-content">
+      <div class="card">
+
+        <div class="title-box">Create Account</div>
+
+        <div id="statusMessage" class="status-msg" role="alert"></div>
+
+        <form id="registerForm" onsubmit="handleSignUp(event)" novalidate>
+          <label for="email">Email Address</label>
+          <input type="email" id="email" placeholder="name@example.com"
+                 inputmode="email" autocomplete="email" autocapitalize="off"
+                 spellcheck="false" required>
+
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="At least 8 characters"
+                 autocomplete="new-password" minlength="8" required>
+
+          <button type="submit" class="btn-primary">Register Account</button>
+        </form>
+
+        <div class="link-box">
+          Already have an account? <a href="signin.html">Sign In</a>
+        </div>
+
+      </div><!-- /.card -->
+    </div><!-- /.main-content -->
+
+    <footer class="page-footer">
+      &copy; 2026 S Allan. All rights reserved.
+    </footer>
+  </div><!-- /.page-wrapper -->
+
+  <script>
+    const poolData = {
+      UserPoolId: 'eu-west-2_BY54tpvV0',
+      ClientId:   '57hfik5lgckcarpu3qjoojmepf'
+    };
+
+    let userPool;
+    if (typeof AmazonCognitoIdentity !== 'undefined') {
+      userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+    }
+
+    function showStatus(message, isError = false) {
+      const el = document.getElementById("statusMessage");
+      el.textContent = message;
+      el.className   = "status-msg " + (isError ? "error" : "success");
+      el.style.display = "block";
+    }
+
+    function handleSignUp(event) {
+      event.preventDefault();
+
+      if (!userPool) {
+        showStatus("Cognito SDK not loaded. Check your internet connection.", true);
+        return;
+      }
+
+      const email    = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      const attributeList = [
+        new AmazonCognitoIdentity.CognitoUserAttribute({ Name: 'email', Value: email })
+      ];
+
+      userPool.signUp(email, password, attributeList, null, (err, result) => {
+        if (err) {
+          showStatus(err.message || JSON.stringify(err), true);
+          return;
+        }
+        showStatus("✅ Registration successful! Redirecting to verification...");
+        setTimeout(() => {
+          window.location.href = `verify.html?email=${encodeURIComponent(email)}`;
+        }, 1000);
+      });
+    }
+  </script>
+
+  <script src="js/nav.js"></script>
+  <script>initNav('Create Account', 'register.html');</script>
+</body>
+</html>

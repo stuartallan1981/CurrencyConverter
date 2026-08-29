@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Verify Email - Holiday Currency Converter</title>
+  <link rel="stylesheet" href="css/app.css" />
+  <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.7/dist/amazon-cognito-identity.min.js"></script>
+</head>
+<body>
+
+  <div class="page-wrapper">
+    <!-- Top nav injected by nav.js -->
+
+    <div class="main-content">
+      <div class="card">
+
+        <div class="title-box">Verify Email</div>
+
+        <div id="statusMessage" class="status-msg" role="alert"></div>
+
+        <form id="verifyForm" onsubmit="handleVerification(event)" novalidate>
+          <label for="email">Email Address</label>
+          <input type="email" id="email" placeholder="name@example.com"
+                 inputmode="email" autocomplete="email" autocapitalize="off"
+                 spellcheck="false" required>
+
+          <label for="code">Verification Code</label>
+          <input type="text" id="code" placeholder="Enter 6-digit code"
+                 inputmode="numeric" autocomplete="one-time-code"
+                 pattern="[0-9]{6}" maxlength="6" required autofocus>
+
+          <button type="submit" class="btn-primary">Verify Account</button>
+          <button type="button" class="btn-secondary" onclick="resendCode()">Resend Verification Code</button>
+        </form>
+
+        <div class="link-box">
+          Already verified? <a href="signin.html">Sign In</a>
+        </div>
+
+      </div><!-- /.card -->
+    </div><!-- /.main-content -->
+
+    <footer class="page-footer">
+      &copy; 2026 S Allan. All rights reserved.
+    </footer>
+  </div><!-- /.page-wrapper -->
+
+  <script>
+    const poolData = {
+      UserPoolId: 'eu-west-2_BY54tpvV0',
+      ClientId:   '57hfik5lgckcarpu3qjoojmepf'
+    };
+
+    let userPool;
+    if (typeof AmazonCognitoIdentity !== 'undefined') {
+      userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+    }
+
+    // Auto-populate email from query string passed by register.html
+    window.addEventListener("DOMContentLoaded", () => {
+      const emailParam = new URLSearchParams(window.location.search).get("email");
+      if (emailParam) {
+        document.getElementById("email").value = emailParam;
+        document.getElementById("code").focus();
+      }
+    });
+
+    function showStatus(message, isError = false) {
+      const el = document.getElementById("statusMessage");
+      el.textContent = message;
+      el.className   = "status-msg " + (isError ? "error" : "success");
+      el.style.display = "block";
+    }
+
+    function handleVerification(event) {
+      event.preventDefault();
+
+      if (!userPool) {
+        showStatus("Cognito SDK not loaded. Check your internet connection.", true);
+        return;
+      }
+
+      const email = document.getElementById("email").value.trim();
+      const code  = document.getElementById("code").value.trim();
+
+      const cognitoUser = new AmazonCognitoIdentity.CognitoUser({
+        Username: email,
+        Pool: userPool
+      });
+
+      cognitoUser.confirmRegistration(code, true, (err, result) => {
+        if (err) {
+          showStatus(err.message || JSON.stringify(err), true);
+          return;
+        }
+        showStatus("✅ Email verified! Redirecting to Sign In...");
+        setTimeout(() => { window.location.href = "signin.html"; }, 1500);
+      });
+    }
+
+    function resendCode() {
+      if (!userPool) {
+        showStatus("Cognito SDK not loaded.", true);
+        return;
+      }
+
+      const email = document.getElementById("email").value.trim();
+      if (!email) {
+        showStatus("Please enter your email address first.", true);
+        return;
+      }
+
+      const cognitoUser = new AmazonCognitoIdentity.CognitoUser({
+        Username: email,
+        Pool: userPool
+      });
+
+      cognitoUser.resendConfirmationCode((err) => {
+        if (err) {
+          showStatus(err.message || JSON.stringify(err), true);
+          return;
+        }
+        showStatus("📩 Verification code resent! Check your inbox.");
+      });
+    }
+  </script>
+
+  <script src="js/nav.js"></script>
+  <script>initNav('Verify Email', 'verify.html');</script>
+</body>
+</html>

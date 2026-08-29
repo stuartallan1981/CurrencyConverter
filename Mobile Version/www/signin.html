@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Sign In - Holiday Currency Converter</title>
+  <link rel="stylesheet" href="css/app.css" />
+  <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.7/dist/amazon-cognito-identity.min.js"></script>
+</head>
+<body>
+
+  <div class="page-wrapper">
+    <!-- Top nav injected by nav.js -->
+
+    <div class="main-content">
+      <div class="card">
+
+        <div class="title-box">Sign In</div>
+
+        <div id="statusMessage" class="status-msg" role="alert"></div>
+
+        <form id="signInForm" onsubmit="handleSignIn(event)" novalidate>
+          <label for="username">Email Address</label>
+          <input type="email" id="username" placeholder="name@example.com"
+                 inputmode="email" autocomplete="email" autocapitalize="off"
+                 spellcheck="false" required>
+
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="Enter password"
+                 autocomplete="current-password" required>
+
+          <button type="submit" class="btn-primary">Sign In</button>
+        </form>
+
+        <div class="link-box">
+          Need an account? <a href="register.html">Create one here</a>
+        </div>
+
+      </div><!-- /.card -->
+    </div><!-- /.main-content -->
+
+    <footer class="page-footer">
+      &copy; 2026 S Allan. All rights reserved.
+    </footer>
+  </div><!-- /.page-wrapper -->
+
+  <script>
+    const poolData = {
+      UserPoolId: 'eu-west-2_BY54tpvV0',
+      ClientId:   '57hfik5lgckcarpu3qjoojmepf'
+    };
+
+    let userPool;
+    if (typeof AmazonCognitoIdentity !== 'undefined') {
+      userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+    }
+
+    function showStatus(message, isError = false) {
+      const el = document.getElementById("statusMessage");
+      el.textContent = message;
+      el.className   = "status-msg " + (isError ? "error" : "success");
+      el.style.display = "block";
+    }
+
+    function handleSignIn(event) {
+      event.preventDefault();
+
+      if (!userPool) {
+        showStatus("Cognito SDK not loaded. Check your internet connection.", true);
+        return;
+      }
+
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value;
+
+      const authDetails = new AmazonCognitoIdentity.AuthenticationDetails({
+        Username: username,
+        Password: password
+      });
+
+      const cognitoUser = new AmazonCognitoIdentity.CognitoUser({
+        Username: username,
+        Pool: userPool
+      });
+
+      cognitoUser.authenticateUser(authDetails, {
+        onSuccess(result) {
+          localStorage.setItem("cognitoIdToken",     result.getIdToken().getJwtToken());
+          localStorage.setItem("cognitoAccessToken", result.getAccessToken().getJwtToken());
+          showStatus("✅ Signed in successfully! Redirecting...");
+          setTimeout(() => { window.location.href = "index.html"; }, 1500);
+        },
+        onFailure(err) {
+          showStatus(err.message || JSON.stringify(err), true);
+        }
+      });
+    }
+  </script>
+
+  <script src="js/nav.js"></script>
+  <script>initNav('Sign In', 'signin.html');</script>
+</body>
+</html>

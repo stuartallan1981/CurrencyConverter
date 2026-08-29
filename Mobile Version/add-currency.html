@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add Additional Currency Payment - Holiday Currency Converter</title>
+
+  <!--
+  ============================================================
+  PAYPAL SDK — SWITCH BETWEEN SANDBOX AND LIVE HERE
+  ============================================================
+  SANDBOX (testing — no real money):
+    client-id=ARuBBEN3SyS0KbYgJ20v_KjOq-3tZ3MFbKSzKthU9NkrxKVg7nDXK-9bAOw3lDZz-L2n6-EceMBF3hsP
+
+  LIVE (real payments):
+    client-id=BAAt1RrdHmQ7kq8Wy8WE2vPAFflxILYLGcqAeHsS4bLE9GlGry3pl0eoQQCvDQ-nN195WAi14jXLaLaLso
+
+  To switch: replace the client-id value in the script src below.
+  components=buttons is required for Smart Buttons to render.
+  ============================================================
+  -->
+
+  <!-- CURRENTLY ACTIVE: LIVE -->
+  <script src="https://www.paypal.com/sdk/js?client-id=BAAt1RrdHmQ7kq8Wy8WE2vPAFflxILYLGcqAeHsS4bLE9GlGry3pl0eoQQCvDQ-nN195WAi14jXLaLaLso&components=buttons&disable-funding=venmo&currency=GBP"></script>
+
+  <!-- TO USE SANDBOX: replace the script tag above with this one:-->
+  <!--<script src="https://www.paypal.com/sdk/js?client-id=ARuBBEN3SyS0KbYgJ20v_KjOq-3tZ3MFbKSzKthU9NkrxKVg7nDXK-9bAOw3lDZz-L2n6-EceMBF3hsP&components=buttons&disable-funding=venmo&currency=GBP"></script>
+-->
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: #fff;
+      padding: 25px 30px;
+      border-radius: 10px;
+      box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+      width: 440px;
+      text-align: center;
+      overflow-y: auto;
+      max-height: 95vh;
+    }
+
+    /* Title dropdown menu */
+    .title-dropdown-container {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: -10px;
+      margin-bottom: 15px;
+    }
+
+    .title-dropdown-container select {
+      width: auto;
+      margin: 0;
+      padding: 6px 12px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .title-box {
+      background-color: #007bff;
+      color: #fff;
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .price-tag {
+      background: #e8f4ff;
+      border: 1px solid #007bff;
+      color: #007bff;
+      padding: 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
+    .back-btn {
+      background-color: #6c757d;
+      margin-top: 8px;
+    }
+
+    .back-btn:hover {
+      background-color: #5a6268;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      text-align: left;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    .section-title {
+      font-weight: bold;
+      margin-top: 15px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 5px;
+      color: #555;
+    }
+
+    #paypal-button-container {
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="title-dropdown-container">
+      <select id="titleDropdown" onchange="navigateToPage(this.value)">
+        <option value="add-currency.html">Add Currency (£0.99)</option>
+        <option value="index.html">Home</option>
+        <option value="contact.html">Contact us</option>
+      </select>
+    </div>
+
+    <div class="title-box">Add Additional Currency</div>
+    <div class="price-tag">One-Time Fee: £0.99</div>
+
+    <form id="paymentForm" onsubmit="event.preventDefault();">
+      <div class="section-title">1. Currency Details</div>
+      <label for="currencySelect">Select World Currency</label>
+      <select id="currencySelect" required>
+        <option value="" disabled selected>-- Select a Country/Currency --</option>
+      </select>
+
+      <p>If the currency you require is not listed, or you need a crypto currency, please contact us via the link in the drop down box at the top right</p>
+
+      <div class="section-title">2. Payment via PayPal</div>
+
+      <!--
+        SANDBOX: Smart Buttons render here using the sandbox client-id above.
+        Log in with your PayPal sandbox Personal buyer account to test.
+        Find sandbox accounts at: developer.paypal.com > Sandbox > Accounts
+
+        LIVE: Smart Buttons still render here — just swap the client-id in the
+        script tag at the top. The hosted button block below can also be
+        re-enabled for live if preferred.
+      -->
+      <div id="paypal-button-container"></div>
+
+      
+      <!--============================================================
+      HOSTED BUTTON — LIVE ONLY
+      Re-enable this block when going live (swap SDK script tag too).
+      Hosted buttons do NOT work with sandbox.
+      ============================================================-->
+      <div id="paypal-container-2LY9HVYP4BJC6"></div>
+      <script>
+        paypal.HostedButtons({
+          hostedButtonId: "2LY9HVYP4BJC6",
+        }).render("#paypal-container-2LY9HVYP4BJC6");
+      </script>
+      
+
+      <button type="button" class="back-btn" onclick="window.location.href='index.html'">Cancel & Return</button>
+    </form>
+
+    <footer class="gallery-footer">
+      <div class="copyright">
+        <p></p>
+        &copy; 2026 S Allan. All rights reserved.
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    function navigateToPage(url) {
+      if (url) {
+        window.location.href = url;
+      }
+    }
+
+    // Retrieve active Cognito User ID from local storage
+    function getCognitoUserId() {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith("CognitoIdentityServiceProvider.") && key.endsWith(".LastAuthUser")) {
+          return localStorage.getItem(key);
+        }
+      }
+      return "guest_user";
+    }
+
+    // World Currencies structured by Country Name (Alphabetical)
+    const worldCurrencies = [
+      { country: "Afghanistan", code: "AFN", name: "Afghan Afghani" },
+      { country: "Albania", code: "ALL", name: "Albanian Lek" },
+      { country: "Algeria", code: "DZD", name: "Algerian Dinar" },
+      { country: "Angola", code: "AOA", name: "Angolan Kwanza" },
+      { country: "Argentina", code: "ARS", name: "Argentine Peso" },
+      { country: "Armenia", code: "AMD", name: "Armenian Dram" },
+      { country: "Aruba", code: "AWG", name: "Aruban Florin" },
+      { country: "Azerbaijan", code: "AZN", name: "Azerbaijani Manat" },
+      { country: "Bahamas", code: "BSD", name: "Bahamian Dollar" },
+      { country: "Bahrain", code: "BHD", name: "Bahraini Dinar" },
+      { country: "Bangladesh", code: "BDT", name: "Bangladeshi Taka" },
+      { country: "Barbados", code: "BBD", name: "Barbadian Dollar" },
+      { country: "Belarus", code: "BYN", name: "Belarusian Ruble" },
+      { country: "Belize", code: "BZD", name: "Belize Dollar" },
+      { country: "Bermuda", code: "BMD", name: "Bermudan Dollar" },
+      { country: "Bhutan", code: "BTN", name: "Bhutanese Ngultrum" },
+      { country: "Bolivia", code: "BOB", name: "Bolivian Boliviano" },
+      { country: "Bosnia & Herzegovina", code: "BAM", name: "Convertible Mark" },
+      { country: "Botswana", code: "BWP", name: "Botswanan Pula" },
+      { country: "Brazil", code: "BRL", name: "Brazilian Real" },
+      { country: "Brunei", code: "BND", name: "Brunei Dollar" },
+      { country: "Bulgaria", code: "BGN", name: "Bulgarian Lev" },
+      { country: "Burundi", code: "BIF", name: "Burundian Franc" },
+      { country: "Cambodia", code: "KHR", name: "Cambodian Riel" },
+      { country: "Cape Verde", code: "CVE", name: "Cape Verdean Escudo" },
+      { country: "Cayman Islands", code: "KYD", name: "Cayman Islands Dollar" },
+      { country: "Central African Republic (CFA)", code: "XAF", name: "Central African CFA Franc" },
+      { country: "Chile", code: "CLP", name: "Chilean Peso" },
+      { country: "Colombia", code: "COP", name: "Colombian Peso" },
+      { country: "Comoros", code: "KMF", name: "Comorian Franc" },
+      { country: "Congo (Democratic Republic)", code: "CDF", name: "Congolese Franc" },
+      { country: "Costa Rica", code: "CRC", name: "Costa Rican Colón" },
+      { country: "Croatia", code: "HRK", name: "Croatian Kuna" },
+      { country: "Cuba", code: "CUP", name: "Cuban Peso" },
+      { country: "Czech Republic", code: "CZK", name: "Czech Koruna" },
+      { country: "Denmark", code: "DKK", name: "Danish Krone" },
+      { country: "Djibouti", code: "DJF", name: "Djiboutian Franc" },
+      { country: "Dominican Republic", code: "DOP", name: "Dominican Peso" },
+      { country: "East Caribbean States", code: "XCD", name: "East Caribbean Dollar" },
+      { country: "Egypt", code: "EGP", name: "Egyptian Pound" },
+      { country: "Eritrea", code: "ERN", name: "Eritrean Nakfa" },
+      { country: "Eswatini", code: "SZL", name: "Swazi Lilangeni" },
+      { country: "Ethiopia", code: "ETB", name: "Ethiopian Birr" },
+      { country: "Falkland Islands", code: "FKP", name: "Falkland Islands Pound" },
+      { country: "Faroe Islands", code: "FOK", name: "Faroese Króna" },
+      { country: "Fiji", code: "FJD", name: "Fijian Dollar" },
+      { country: "Gambia", code: "GMD", name: "Gambian Dalasi" },
+      { country: "Georgia", code: "GEL", name: "Georgian Lari" },
+      { country: "Ghana", code: "GHS", name: "Ghanaian Cedi" },
+      { country: "Gibraltar", code: "GIP", name: "Gibraltar Pound" },
+      { country: "Guatemala", code: "GTQ", name: "Guatemalan Quetzal" },
+      { country: "Guernsey", code: "GGP", name: "Guernsey Pound" },
+      { country: "Guinea", code: "GNF", name: "Guinean Franc" },
+      { country: "Guyana", code: "GYD", name: "Guyanese Dollar" },
+      { country: "Haiti", code: "HTG", name: "Haitian Gourde" },
+      { country: "Honduras", code: "HNL", name: "Honduran Lempira" },
+      { country: "Hong Kong", code: "HKD", name: "Hong Kong Dollar" },
+      { country: "Hungary", code: "HUF", name: "Hungarian Forint" },
+      { country: "Iceland", code: "ISK", name: "Icelandic Króna" },
+      { country: "India", code: "INR", name: "Indian Rupee" },
+      { country: "Indonesia", code: "IDR", name: "Indonesian Rupiah" },
+      { country: "Iran", code: "IRR", name: "Iranian Rial" },
+      { country: "Iraq", code: "IQD", name: "Iraqi Dinar" },
+      { country: "Isle of Man", code: "IMP", name: "Manx Pound" },
+      { country: "Israel", code: "ILS", name: "Israeli New Shekel" },
+      { country: "Jamaica", code: "JMD", name: "Jamaican Dollar" },
+      { country: "Jersey", code: "JEP", name: "Jersey Pound" },
+      { country: "Jordan", code: "JOD", name: "Jordanian Dinar" },
+      { country: "Kazakhstan", code: "KZT", name: "Kazakhstani Tenge" },
+      { country: "Kenya", code: "KES", name: "Kenyan Shilling" },
+      { country: "Kiribati", code: "KID", name: "Kiribati Dollar" },
+      { country: "Kuwait", code: "KWD", name: "Kuwaiti Dinar" },
+      { country: "Kyrgyzstan", code: "KGS", name: "Kyrgystani Som" },
+      { country: "Laos", code: "LAK", name: "Laotian Kip" },
+      { country: "Lebanon", code: "LBP", name: "Lebanese Pound" },
+      { country: "Lesotho", code: "LSL", name: "Lesotho Loti" },
+      { country: "Liberia", code: "LRD", name: "Liberian Dollar" },
+      { country: "Libya", code: "LYD", name: "Libyan Dinar" },
+      { country: "Macau", code: "MOP", name: "Macanese Pataca" },
+      { country: "Madagascar", code: "MGA", name: "Malagasy Ariary" },
+      { country: "Malawi", code: "MWK", name: "Malawian Kwacha" },
+      { country: "Malaysia", code: "MYR", name: "Malaysian Ringgit" },
+      { country: "Maldives", code: "MVR", name: "Maldivian Rufiyaa" },
+      { country: "Mauritania", code: "MRU", name: "Mauritanian Ouguiya" },
+      { country: "Mauritius", code: "MUR", name: "Mauritian Rupee" },
+      { country: "Mexico", code: "MXN", name: "Mexican Peso" },
+      { country: "Moldova", code: "MDL", name: "Moldovan Leu" },
+      { country: "Mongolia", code: "MNT", name: "Mongolian Tugrik" },
+      { country: "Morocco", code: "MAD", name: "Moroccan Dirham" },
+      { country: "Mozambique", code: "MZN", name: "Mozambican Metical" },
+      { country: "Myanmar", code: "MMK", name: "Myanmar Kyat" },
+      { country: "Namibia", code: "NAD", name: "Namibian Dollar" },
+      { country: "Nepal", code: "NPR", name: "Nepalese Rupee" },
+      { country: "Netherlands Antilles", code: "ANG", name: "Netherlands Antillean Guilder" },
+      { country: "Nicaragua", code: "NIO", name: "Nicaraguan Córdoba" },
+      { country: "Nigeria", code: "NGN", name: "Nigerian Naira" },
+      { country: "North Macedonia", code: "MKD", name: "Macedonian Denar" },
+      { country: "Norway", code: "NOK", name: "Norwegian Krone" },
+      { country: "Oman", code: "OMR", name: "Omani Rial" },
+      { country: "Pakistan", code: "PKR", name: "Pakistani Rupee" },
+      { country: "Panama", code: "PAB", name: "Panamanian Balboa" },
+      { country: "Papua New Guinea", code: "PGK", name: "Papua New Guinean Kina" },
+      { country: "Paraguay", code: "PYG", name: "Paraguayan Guarani" },
+      { country: "Peru", code: "PEN", name: "Peruvian Sol" },
+      { country: "Philippines", code: "PHP", name: "Philippine Peso" },
+      { country: "Poland", code: "PLN", name: "Polish Zloty" },
+      { country: "Qatar", code: "QAR", name: "Qatari Rial" },
+      { country: "Romania", code: "RON", name: "Romanian Leu" },
+      { country: "Russia", code: "RUB", name: "Russian Ruble" },
+      { country: "Rwanda", code: "RWF", name: "Rwandan Franc" },
+      { country: "Samoa", code: "WST", name: "Samoan Tala" },
+      { country: "São Tomé & Príncipe", code: "STN", name: "Dobra" },
+      { country: "Saudi Arabia", code: "SAR", name: "Saudi Riyal" },
+      { country: "Serbia", code: "RSD", name: "Serbian Dinar" },
+      { country: "Seychelles", code: "SCR", name: "Seychellois Rupee" },
+      { country: "Sierra Leone", code: "SLE", name: "Sierra Leonean Leone" },
+      { country: "Singapore", code: "SGD", name: "Singapore Dollar" },
+      { country: "Solomon Islands", code: "SBD", name: "Solomon Islands Dollar" },
+      { country: "Somalia", code: "SOS", name: "Somali Shilling" },
+      { country: "South Africa", code: "ZAR", name: "South African Rand" },
+      { country: "South Korea", code: "KRW", name: "South Korean Won" },
+      { country: "South Sudan", code: "SSP", name: "South Sudanese Pound" },
+      { country: "Sri Lanka", code: "LKR", name: "Sri Lankan Rupee" },
+      { country: "St. Helena", code: "SHP", name: "St. Helena Pound" },
+      { country: "Sudan", code: "SDG", name: "Sudanese Pound" },
+      { country: "Suriname", code: "SRD", name: "Surinamese Dollar" },
+      { country: "Sweden", code: "SEK", name: "Swedish Krona" },
+      { country: "Switzerland", code: "CHF", name: "Swiss Franc" },
+      { country: "Syria", code: "SYP", name: "Syrian Pound" },
+      { country: "Taiwan", code: "TWD", name: "New Taiwan Dollar" },
+      { country: "Tajikistan", code: "TJS", name: "Tajikistani Somoni" },
+      { country: "Tanzania", code: "TZS", name: "Tanzanian Shilling" },
+      { country: "Thailand", code: "THB", name: "Thai Baht" },
+      { country: "Tonga", code: "TOP", name: "Tongan Paʻanga" },
+      { country: "Trinidad & Tobago", code: "TTD", name: "Trinidad & Tobago Dollar" },
+      { country: "Tunisia", code: "TND", name: "Tunisian Dinar" },
+      { country: "Turkey", code: "TRY", name: "Turkish Lira" },
+      { country: "Turkmenistan", code: "TMT", name: "Turkmenistani Manat" },
+      { country: "Tuvalu", code: "TVD", name: "Tuvaluan Dollar" },
+      { country: "Uganda", code: "UGX", name: "Ugandan Shilling" },
+      { country: "Ukraine", code: "UAH", name: "Ukrainian Hryvnia" },
+      { country: "United Arab Emirates", code: "AED", name: "UAE Dirham" },
+      { country: "Uruguay", code: "UYU", name: "Uruguayan Peso" },
+      { country: "Uzbekistan", code: "UZS", name: "Uzbekistani Som" },
+      { country: "Vanuatu", code: "VUV", name: "Vanuatu Vatu" },
+      { country: "Venezuela", code: "VES", name: "Venezuelan Bolívar" },
+      { country: "Vietnam", code: "VND", name: "Vietnamese Dong" },
+      { country: "West African States (CFA)", code: "XOF", name: "West African CFA Franc" },
+      { country: "Yemen", code: "YER", name: "Yemeni Rial" },
+      { country: "Zambia", code: "ZMW", name: "Zambian Kwacha" },
+      { country: "Zimbabwe", code: "ZWL", name: "Zimbabwean Dollar" }
+    ];
+
+    // Populate dropdown sorted by Country Name
+    const currencySelect = document.getElementById("currencySelect");
+    worldCurrencies.forEach(item => {
+      const opt = new Option(`${item.country} - ${item.name} (${item.code})`, JSON.stringify(item));
+      currencySelect.add(opt);
+    });
+
+    // Initialize PayPal Smart Buttons
+    // Works for both sandbox and live — button appearance and flow are identical.
+    // Use sandbox buyer account credentials when testing.
+    if (window.paypal) {
+      paypal.Buttons({
+        style: {
+          layout: 'vertical',
+          color:  'gold',
+          shape:  'rect',
+          label:  'paypal'
+        },
+        createOrder: function(data, actions) {
+          if (!currencySelect.value) {
+            alert("Please select a currency from the list before paying.");
+            return Promise.reject(new Error("No currency selected"));
+          }
+
+          const selectedData = JSON.parse(currencySelect.value);
+
+          return actions.order.create({
+            purchase_units: [{
+              amount: {
+                value: '0.99',
+                currency_code: 'GBP'
+              },
+              description: `Add Custom Currency: ${selectedData.code} - ${selectedData.name}`
+            }]
+          });
+        },
+        onApprove: function(data, actions) {
+          return actions.order.capture().then(async function(details) {
+            const selectedData = JSON.parse(currencySelect.value);
+            const userId = getCognitoUserId();
+
+            // 1. Record purchase in AWS DynamoDB via API Gateway
+            try {
+              await fetch('https://teiit1vla3.execute-api.eu-west-2.amazonaws.com/prod/purchases', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  userId: userId,
+                  currencyCode: selectedData.code,
+                  currencyName: selectedData.name,
+                  country: selectedData.country
+                })
+              });
+            } catch (err) {
+              console.error("Failed to log purchase to database:", err);
+            }
+
+            // 2. Save custom currency to LocalStorage
+            const savedCurrencies = JSON.parse(localStorage.getItem("customCurrencies")) || {};
+            savedCurrencies[selectedData.code] = `${selectedData.country} (${selectedData.name})`;
+            localStorage.setItem("customCurrencies", JSON.stringify(savedCurrencies));
+
+            // 3. Set active currency on home page
+            localStorage.setItem("fromCurrency", selectedData.code);
+
+            // 4. Redirect to Home
+            window.location.href = "index.html";
+          });
+        },
+        onError: function(err) {
+          console.error("PayPal Error:", err);
+          alert("Payment processing error. Please try again.");
+        }
+      }).render('#paypal-button-container');
+    }
+  </script>
+</body>
+</html>

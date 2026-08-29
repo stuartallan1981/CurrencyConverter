@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Holiday Currency Converter</title>
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+
+  <div class="page-wrapper">
+    <!-- Top nav injected by nav.js -->
+
+    <div class="main-content">
+      <div class="card">
+
+        <div class="title-box">Holiday Currency Converter</div>
+
+        <!-- Auth warning -->
+        <div id="authWarning" class="auth-warning" role="alert">
+          🔒 Please <a href="signin.html">Sign In</a> to edit conversion values.
+        </div>
+
+        <label for="amount"><b>Amount to Convert:</b></label>
+        <input type="number" id="amount" placeholder="Sign in to enter amount"
+               inputmode="decimal" step="0.01" disabled>
+
+        <div id="outputBox" class="output-box" aria-live="polite">
+          Converted amount will appear here
+        </div>
+        <p id="note" class="note"></p>
+
+        <label for="fromCurrency" id="fromCurrencyLabel"><b>From Currency:</b></label>
+        <select id="fromCurrency" aria-label="From currency"></select>
+
+        <label for="toCurrency"><b>To Currency:</b></label>
+        <select id="toCurrency" aria-label="To currency"></select>
+
+        <button id="swapButton" class="btn-ghost" onclick="swapCurrencies()">🔄 Swap Currencies</button>
+        <button id="fetchRateBtn" class="btn-primary" onclick="fetchLiveExchangeRate()">⚡ Fetch Live Exchange Rate</button>
+
+        <div class="manual-rate">
+          <h3>Exchange rate currency bought at:</h3>
+          <div class="rate-row">
+            <label id="forwardLabel">From → To:</label>
+            <input type="number" id="manualRateForward" placeholder="Sign in to enter rate"
+                   inputmode="decimal" step="0.0001" disabled>
+          </div>
+          <div class="rate-row" id="inverseContainer" style="display:none;">
+            <label id="inverseLabel">To → From:</label>
+            <input type="number" id="manualRateInverse" placeholder="e.g. 0.80"
+                   inputmode="decimal" step="0.0001" disabled>
+          </div>
+          <button id="saveButton" class="btn-save" onclick="saveSettings()">💾 Save</button>
+        </div>
+
+        <div class="add-currency-banner">
+          <h3>Need an additional currency?</h3>
+          <p>Add any world currency for a one-time fee of <b>£0.99</b>.</p>
+          <button class="btn-success" onclick="window.location.href='add-currency.html'">➕ Add an Additional Currency</button>
+        </div>
+
+      </div><!-- /.card -->
+    </div><!-- /.main-content -->
+
+    <footer class="page-footer">
+      &copy; 2026 S Allan. All rights reserved.
+    </footer>
+  </div><!-- /.page-wrapper -->
+
+  <script>
+    // ── Currency data ──────────────────────────────────────────────
+    const currencies = {
+      GBP: "British Pound",
+      EUR: "Euro",
+      USD: "US Dollar",
+      AUD: "Australian Dollar",
+      CAD: "Canadian Dollar",
+      CNY: "Chinese Yuan",
+      JPY: "Japanese Yen",
+      NZD: "New Zealand Dollar"
+    };
+
+    // ── DOM refs ───────────────────────────────────────────────────
+    const fromSelect       = document.getElementById("fromCurrency");
+    const toSelect         = document.getElementById("toCurrency");
+    const outputBox        = document.getElementById("outputBox");
+    const noteEl           = document.getElementById("note");
+    const manualRateForward = document.getElementById("manualRateForward");
+    const manualRateInverse = document.getElementById("manualRateInverse");
+    const amountInput      = document.getElementById("amount");
+    const forwardLabel     = document.getElementById("forwardLabel");
+    const inverseLabel     = document.getElementById("inverseLabel");
+    const authWarning      = document.getElementById("authWarning");
+    const fetchRateBtn     = document.getElementById("fetchRateBtn");
+
+    // ── Auth ───────────────────────────────────────────────────────
+    function isCognitoSignedIn() {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith("CognitoIdentityServiceProvider.") && key.endsWith(".idToken")) {
+          return true;
+        }
+      }
+      return !!(localStorage.getItem("cognitoAccessToken") || localStorage.getItem("cognitoIdToken"));
+    }
+
+    function applyAuthProtection() {
+      const auth = isCognitoSignedIn();
+      amountInput.disabled       = !auth;
+      manualRateForward.disabled = !auth;
+      fetchRateBtn.disabled      = !auth;
+      amountInput.placeholder    = auth ? "e.g. 100"  : "Sign in to enter amount";
+      manualRateForward.placeholder = auth ? "e.g. 1.25" : "Sign in to enter rate";
+      authWarning.style.display  = auth ? "none" : "block";
+    }
+
+    // ── Dropdowns ──────────────────────────────────────────────────
+    function populateSelects() {
+      fromSelect.innerHTML = "";
+      toSelect.innerHTML   = "";
+
+      const saved = JSON.parse(localStorage.getItem("customCurrencies")) || {};
+      const all   = { ...currencies, ...saved };
+
+      for (const [code, name] of Object.entries(all)) {
+        fromSelect.add(new Option(`${code} - ${name}`, code));
+        toSelect.add(new Option(`${code} - ${name}`, code));
+      }
+
+      const codes       = Object.keys(all);
+      const savedFrom   = localStorage.getItem("fromCurrency") || "GBP";
+      const savedTo     = localStorage.getItem("toCurrency")   || "EUR";
+      const resolvedFrom = codes.includes(savedFrom) ? savedFrom : codes[0];
+      const resolvedTo   = codes.includes(savedTo) && savedTo !== resolvedFrom
+                           ? savedTo
+                           : codes.find(c => c !== resolvedFrom) || codes[0];
+
+      fromSelect.value = resolvedFrom;
+      toSelect.value   = resolvedTo;
+
+      localStorage.setItem("fromCurrency", resolvedFrom);
+      localStorage.setItem("toCurrency",   resolvedTo);
+
+      updateRateLabels();
+      loadSavedRate();
+    }
+
+    function currencyKey() {
+      return `${fromSelect.value}_${toSelect.value}`;
+    }
+
+    function loadSavedRate() {
+      const rates = JSON.parse(localStorage.getItem("savedRates")) || {};
+      const key   = currencyKey();
+      if (rates[key]) {
+        manualRateForward.value = parseFloat(rates[key]).toFixed(4);
+        manualRateInverse.value = (1 / rates[key]).toFixed(4);
+      } else {
+        manualRateForward.value = "";
+        manualRateInverse.value = "";
+      }
+    }
+
+    function updateRateLabels() {
+      forwardLabel.textContent = `From (${fromSelect.value}) → To (${toSelect.value}):`;
+      inverseLabel.textContent = `To (${toSelect.value}) → From (${fromSelect.value}):`;
+      loadSavedRate();
+    }
+
+    // ── Fetch live rate ────────────────────────────────────────────
+    async function fetchLiveExchangeRate() {
+      if (!isCognitoSignedIn()) return;
+
+      const from = fromSelect.value;
+      const to   = toSelect.value;
+
+      if (!from || !to) {
+        outputBox.textContent = "Please select both currencies.";
+        return;
+      }
+      if (from === to) {
+        outputBox.textContent = "Please select two different currencies.";
+        return;
+      }
+
+      fetchRateBtn.disabled     = true;
+      fetchRateBtn.textContent  = "Fetching Rate...";
+
+      try {
+        let rate = null;
+
+        let resp = await fetch(`https://open.er-api.com/v6/latest/${from}`);
+        let data = await resp.json();
+
+        if (data?.result === "success" && data.rates?.[to] !== undefined) {
+          rate = data.rates[to];
+        } else {
+          resp = await fetch(`https://open.er-api.com/v6/latest/${to}`);
+          data = await resp.json();
+          if (data?.result === "success" && data.rates?.[from] !== undefined) {
+            rate = 1 / data.rates[from];
+          }
+        }
+
+        if (rate !== null && rate > 0) {
+          const decimals = rate < 0.01 ? 6 : rate < 0.1 ? 5 : 4;
+          manualRateForward.value = rate.toFixed(decimals);
+          manualRateInverse.value = (1 / rate).toFixed(4);
+          convertCurrency();
+          noteEl.textContent = `Live rate fetched: 1 ${from} = ${rate.toFixed(decimals)} ${to}`;
+        } else {
+          outputBox.textContent = "—";
+          noteEl.textContent    = `Rate not available for ${from} → ${to}. Enter manually.`;
+        }
+      } catch (err) {
+        console.error("Exchange rate error:", err);
+        outputBox.textContent = "—";
+        noteEl.textContent    = "Failed to fetch rate. Please enter manually.";
+      } finally {
+        fetchRateBtn.disabled    = false;
+        fetchRateBtn.textContent = "⚡ Fetch Live Exchange Rate";
+      }
+    }
+
+    // ── Convert ────────────────────────────────────────────────────
+    function convertCurrency() {
+      if (!isCognitoSignedIn()) return;
+
+      const from      = fromSelect.value;
+      const to        = toSelect.value;
+      const amount    = parseFloat(amountInput.value);
+      const rateForwd = parseFloat(manualRateForward.value);
+
+      if (isNaN(amount) || amount <= 0)            { outputBox.textContent = "—"; noteEl.textContent = ""; return; }
+      if (from === to)                              { outputBox.textContent = "Select two different currencies."; noteEl.textContent = ""; return; }
+      if (isNaN(rateForwd) || rateForwd <= 0)      { outputBox.textContent = "Enter a valid exchange rate."; noteEl.textContent = ""; return; }
+
+      const result = amount * rateForwd;
+      outputBox.textContent = `${result.toFixed(2)} ${to}`;
+      noteEl.textContent    = `Rate: 1 ${from} = ${rateForwd.toFixed(4)} ${to}`;
+    }
+
+    // ── Save ───────────────────────────────────────────────────────
+    function saveSettings(rate) {
+      localStorage.setItem("fromCurrency", fromSelect.value);
+      localStorage.setItem("toCurrency",   toSelect.value);
+      if (!isCognitoSignedIn()) return;
+
+      const rateForwd = rate ?? parseFloat(manualRateForward.value);
+      if (isNaN(rateForwd) || rateForwd <= 0) return;
+
+      const rates = JSON.parse(localStorage.getItem("savedRates")) || {};
+      rates[currencyKey()] = rateForwd;
+      localStorage.setItem("savedRates", JSON.stringify(rates));
+    }
+
+    // ── Swap ───────────────────────────────────────────────────────
+    function swapCurrencies() {
+      const tmp        = fromSelect.value;
+      fromSelect.value = toSelect.value;
+      toSelect.value   = tmp;
+
+      localStorage.setItem("fromCurrency", fromSelect.value);
+      localStorage.setItem("toCurrency",   toSelect.value);
+
+      const cur = parseFloat(manualRateForward.value);
+      let inverted = null;
+      if (!isNaN(cur) && cur > 0) {
+        inverted = 1 / cur;
+        manualRateForward.value = inverted.toFixed(4);
+        manualRateInverse.value = (1 / inverted).toFixed(4);
+        const rates = JSON.parse(localStorage.getItem("savedRates")) || {};
+        rates[currencyKey()] = inverted;
+        localStorage.setItem("savedRates", JSON.stringify(rates));
+      }
+
+      updateRateLabels();
+      convertCurrency();
+      if (inverted && isCognitoSignedIn()) saveSettings(inverted);
+    }
+
+    // ── Event listeners ────────────────────────────────────────────
+    manualRateForward.addEventListener("input", () => {
+      const val = parseFloat(manualRateForward.value);
+      manualRateInverse.value = (!isNaN(val) && val > 0) ? (1 / val).toFixed(4) : "";
+      convertCurrency();
+    });
+
+    amountInput.addEventListener("input", convertCurrency);
+
+    fromSelect.addEventListener("change", () => {
+      localStorage.setItem("fromCurrency", fromSelect.value);
+      updateRateLabels();
+      convertCurrency();
+    });
+
+    toSelect.addEventListener("change", () => {
+      localStorage.setItem("toCurrency", toSelect.value);
+      updateRateLabels();
+      convertCurrency();
+    });
+
+    // ── Init ───────────────────────────────────────────────────────
+    populateSelects();
+    applyAuthProtection();
+    convertCurrency();
+  </script>
+
+  <script src="js/nav.js"></script>
+  <script>initNav('Holiday Currency Converter', 'index.html');</script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{
+  "name": "holiday-currency-converter",
+  "version": "1.0.0",
+  "description": "Holiday Currency Converter mobile app",
+  "main": "index.js",
+  "scripts": {
+    "build": "echo No build step required - static web assets in www/",
+    "cap:add:android": "npx cap add android",
+    "cap:add:ios": "npx cap add ios",
+    "cap:sync": "npx cap sync",
+    "cap:open:android": "npx cap open android",
+    "cap:open:ios": "npx cap open ios",
+    "cap:run:android": "npx cap run android",
+    "cap:run:ios": "npx cap run ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "6.2.0",
+    "@capacitor/app": "6.0.2",
+    "@capacitor/core": "6.2.0",
+    "@capacitor/ios": "6.2.0",
+    "@capacitor/splash-screen": "6.0.3",
+    "@capacitor/status-bar": "6.0.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "6.2.0"
+  }
+}
