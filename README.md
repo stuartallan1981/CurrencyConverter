@@ -1,4 +1,4 @@
-# Holiday Currency Converter
+# Holiday Currency Converter App
 
 A currency conversion app built for travellers, available as both a web app and a native Android app. Users can enter the exchange rate they actually bought currency at, fetch live market rates, and purchase additional world currencies as an in-app add-on.
 
