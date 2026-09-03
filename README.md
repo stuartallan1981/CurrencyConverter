@@ -2,6 +2,8 @@
 
 A currency conversion app built for travellers, available as both a web app and a native Android app. Users can enter the exchange rate they actually bought currency at, fetch live market rates, and purchase additional world currencies as an in-app add-on.
 
+> **Status:** Published to the Google Play Store in **closed testing**. PayPal payments are currently running in **sandbox mode** (no real money) for testing.
+
 ---
 
 ## Features
@@ -28,7 +30,7 @@ A currency conversion app built for travellers, available as both a web app and 
 | Backend API | AWS API Gateway + Lambda |
 | Database | AWS DynamoDB (purchase records) |
 | Exchange rates | [open.er-api.com](https://open.er-api.com) (free public API) |
-| Payments | PayPal JS SDK (Smart Buttons + Hosted Button) |
+| Payments | PayPal JS SDK (Smart Buttons — sandbox mode) |
 | Region | `eu-west-2` (London) |
 
 ---
@@ -84,7 +86,7 @@ User (Browser / Android WebView)
         │               └── POST /purchases → Lambda → DynamoDB
         │
         └── Payments
-              └── PayPal JS SDK (live, GBP £0.99)
+              └── PayPal JS SDK (sandbox, GBP £0.99)
 ```
 
 ### Local state (localStorage)
@@ -113,9 +115,11 @@ All user preferences are stored client-side:
 ## Add Currency Flow
 
 1. User selects a currency from the ~150-currency dropdown on `add-currency.html`
-2. PayPal Smart Buttons process a £0.99 GBP payment
+2. PayPal Smart Buttons process a £0.99 GBP payment (currently in **sandbox mode** — use a PayPal sandbox buyer account to test)
 3. On approval, a `POST /purchases` request is sent to API Gateway with the Cognito user ID, currency code, name, and country
 4. The currency is saved to `localStorage["customCurrencies"]` and the user is redirected to `index.html`
+
+> **Switching sandbox ↔ live:** The PayPal SDK `client-id` is set in the `<head>` of each `add-currency.html`. Comments in the file list both the sandbox and live client IDs. The Hosted Button block is disabled while in sandbox (hosted buttons do not work in sandbox) and should be re-enabled when going live.
 
 ---
 
@@ -124,6 +128,8 @@ All user preferences are stored client-side:
 The converter includes these currencies out of the box:
 
 `GBP` `EUR` `USD` `AUD` `CAD` `CNY` `JPY` `NZD`
+
+On a fresh install (no saved selection), the converter defaults to **From: USD → To: GBP**. Any previously saved selection in `localStorage` takes precedence over these defaults.
 
 Any of ~150 additional world currencies can be added for £0.99 each.
 
@@ -151,12 +157,28 @@ Any of ~150 additional world currencies can be added for £0.99 each.
 
 ---
 
+## Building & Releasing the Android App
+
+The Android app bundles the web assets via Capacitor, so any change to the HTML/CSS/JS must be synced into the Android project before building.
+
+1. **Sync web assets** — from the `Mobile Version/` directory:
+   ```
+   npx cap sync android
+   ```
+   This copies `www/` into `android/app/src/main/assets/public/` and updates native plugins.
+2. **Bump the version** — in `Mobile Version/android/app/build.gradle`, increase `versionCode` and `versionName` (Google Play requires a higher `versionCode` for every upload).
+3. **Build a signed release AAB** — in Android Studio: Build → Generate Signed Bundle / APK → Android App Bundle, using your existing keystore.
+4. **Upload to Play Console** — under Testing → Closed testing, create a new release and upload the `.aab`.
+
+---
+
 ## Development Notes
 
 - All page styles in the web version are inline; the mobile version uses the shared `css/app.css` and `js/nav.js` for consistency
 - The mobile CSS includes `env(safe-area-inset-*)` support for notched devices
 - `Holiday-Currency-Converter.html` is a legacy prototype with no auth or AWS integration — it is not part of the production app
 - Custom currencies are stored locally only; purchased currencies cannot currently be restored from the server after a reinstall or on a new device
+- PayPal is currently in **sandbox mode** — set up a sandbox buyer account at [developer.paypal.com](https://developer.paypal.com) (Sandbox → Accounts) to test the payment flow
 
 ---
 
