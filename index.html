@@ -4,31 +4,30 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Holiday Currency Converter</title>
+
+  <!-- ── Auth gate: run before ANY page content renders ──────────────
+       If the user is not signed in, go straight to the sign-in page.
+       Signed-in users continue to the converter below. -->
+  <script>
+    (function () {
+      var signedIn = false;
+      for (var i = 0; i < localStorage.length; i++) {
+        var key = localStorage.key(i);
+        if (key && key.indexOf('CognitoIdentityServiceProvider.') === 0 && key.slice(-8) === '.idToken') {
+          signedIn = true;
+          break;
+        }
+      }
+      if (!signedIn) {
+        signedIn = !!(localStorage.getItem('cognitoAccessToken') || localStorage.getItem('cognitoIdToken'));
+      }
+      if (!signedIn) {
+        window.location.replace('signin.html');
+      }
+    })();
+  </script>
+
   <style>
-      .top-nav {
-          display: flex;
-          justify-content: flex-end;
-          margin-bottom: 25px;
-          padding-bottom: 15px;
-          border-bottom: 1px solid #eaeaea;
-      }
-      .nav-link {
-          text-decoration: none;
-          color: #007bff;
-          font-weight: 500;
-          font-size: 1.05em;
-          transition: color 0.2s ease;
-      }
-      .nav-link:hover {
-          color: #0056b3;
-          text-decoration: underline;
-      }
-      .nav-link.active {
-          color: #333;
-          font-weight: bold;
-          pointer-events: none;
-      }
-    
     body {
       font-family: Arial, sans-serif;
       background: #f4f6f8;
@@ -45,14 +44,38 @@
       background: #fff;
       padding: 25px 30px;
       border-radius: 10px;
-      box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 3px 15px rgba(0,0,0,0.1);
       width: 440px;
       text-align: center;
       overflow-y: auto;
       max-height: 95vh;
     }
 
-    /* Title box */
+    /* ── Top bar: language picker (left) + nav dropdown (right) ── */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: -10px;
+      margin-bottom: 15px;
+      gap: 8px;
+    }
+
+    .top-bar select {
+      width: auto;
+      margin: 0;
+      padding: 6px 10px;
+      font-size: 13px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background: #fff;
+    }
+
+    .lang-picker {
+      flex-shrink: 0;
+    }
+
     .title-box {
       background-color: #007bff;
       color: #fff;
@@ -65,24 +88,7 @@
       letter-spacing: 0.5px;
     }
 
-    .title-dropdown-container {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: -10px;
-      margin-bottom: 15px;
-    }
-
-    .title-dropdown-container select {
-      width: auto;
-      margin: 0;
-      padding: 6px 12px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-
-    select,
-    input,
-    button {
+    select, input, button {
       width: 100%;
       padding: 10px;
       margin: 8px 0;
@@ -92,9 +98,7 @@
       box-sizing: border-box;
     }
 
-    /* Style for disabled state */
-    input:disabled,
-    button:disabled {
+    input:disabled, button:disabled {
       background-color: #e9ecef;
       cursor: not-allowed;
       opacity: 0.7;
@@ -107,9 +111,7 @@
       margin-top: 10px;
     }
 
-    #fromCurrencyLabel {
-      margin-top: 20px;
-    }
+    #fromCurrencyLabel { margin-top: 20px; }
 
     #outputBox {
       margin-top: 10px;
@@ -128,11 +130,7 @@
       box-sizing: border-box;
     }
 
-    #note {
-      font-size: 13px;
-      color: #555;
-      margin-top: 8px;
-    }
+    #note { font-size: 13px; color: #555; margin-top: 8px; }
 
     .auth-warning {
       background-color: #fff3cd;
@@ -145,11 +143,7 @@
       display: none;
     }
 
-    .auth-warning a {
-      color: #856404;
-      font-weight: bold;
-      text-decoration: underline;
-    }
+    .auth-warning a { color: #856404; font-weight: bold; text-decoration: underline; }
 
     .manual-rate {
       margin-top: 20px;
@@ -160,6 +154,8 @@
       margin-bottom: 20px;
     }
 
+    .manual-rate h3 { color: #b36b00; margin-bottom: 10px; font-size: 16px; }
+
     .add-currency-banner {
       margin-top: 20px;
       background: #f7fbff;
@@ -168,36 +164,10 @@
       border-radius: 8px;
     }
 
-    .add-currency-banner h3 {
-      margin-top: 0;
-      margin-bottom: 8px;
-      font-size: 16px;
-      color: #007bff;
-    }
-
-    .add-currency-banner p {
-      font-size: 13px;
-      color: #666;
-      margin-bottom: 12px;
-    }
-
-    .add-currency-banner button {
-      background-color: #28a745;
-      color: white;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .add-currency-banner button:hover {
-      background-color: #218838;
-    }
-
-    .manual-rate h3 {
-      color: #b36b00;
-      margin-bottom: 10px;
-      font-size: 16px;
-    }
+    .add-currency-banner h3 { margin-top: 0; margin-bottom: 8px; font-size: 16px; color: #007bff; }
+    .add-currency-banner p  { font-size: 13px; color: #666; margin-bottom: 12px; }
+    .add-currency-banner button { background-color: #28a745; color: white; border: none; font-weight: bold; cursor: pointer; }
+    .add-currency-banner button:hover { background-color: #218838; }
 
     .row {
       display: flex;
@@ -206,246 +176,219 @@
       gap: 10px;
     }
 
-    .row label {
-      flex: 1;
-      text-align: left;
-      font-size: 14px;
-      white-space: nowrap;
-      font-weight: normal;
-    }
+    .row label { flex: 1; text-align: left; font-size: 14px; white-space: nowrap; font-weight: normal; }
+    .row input[type="number"] { width: 200px; margin-left: 10px; }
 
-    .row input[type="number"] {
-      width: 200px;
-      margin-left: 10px;
-    }
-
-    #inverseContainer {
-      display: none;
-    }
+    #inverseContainer { display: none; }
 
     #saveButton {
-      background-color: #fff7e6;
-      color: #333;
-      border: none;
-      box-shadow: none;
-      cursor: pointer;
-      font-weight: bold;
-      margin-top: 10px;
-      transition: background 0.2s ease;
+      background-color: #fff7e6; color: #333; border: none;
+      box-shadow: none; cursor: pointer; font-weight: bold;
+      margin-top: 10px; transition: background 0.2s ease;
     }
-
-    #saveButton:hover {
-      background-color: #ffe9bf;
-    }
+    #saveButton:hover { background-color: #ffe9bf; }
 
     #swapButton {
-      background-color: #fff;
-      color: #333;
-      border: none;
-      box-shadow: none;
-      cursor: pointer;
-      font-weight: bold;
-      margin-top: 10px;
-      transition: background 0.2s ease;
+      background-color: #fff; color: #333; border: none;
+      box-shadow: none; cursor: pointer; font-weight: bold;
+      margin-top: 10px; transition: background 0.2s ease;
     }
-
-    #swapButton:hover {
-      background-color: #f4f4f4;
-    }
+    #swapButton:hover { background-color: #f4f4f4; }
 
     #fetchRateBtn {
-      background-color: #007bff;
-      color: white;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 8px;
+      background-color: #007bff; color: white; border: none;
+      font-weight: bold; cursor: pointer; margin-top: 8px;
       transition: background 0.2s ease;
     }
+    #fetchRateBtn:hover:not(:disabled) { background-color: #0056b3; }
 
-    #fetchRateBtn:hover:not(:disabled) {
-      background-color: #0056b3;
-    }
+    .gallery-footer { margin-top: 20px; text-align: center; font-size: 0.9em; color: #555; }
   </style>
 </head>
 <body>
 
   <div class="converter">
-    <div class="title-dropdown-container">
+
+    <!-- ── Top bar: language left, nav right ── -->
+    <div class="top-bar">
+      <select class="lang-picker" id="langPicker" aria-label="Select language"
+              onchange="setLang(this.value)">
+        <option value="en">🇬🇧 English</option>
+        <option value="fr">🇫🇷 Français</option>
+        <option value="es">🇪🇸 Español</option>
+        <option value="de">🇩🇪 Deutsch</option>
+        <option value="it">🇮🇹 Italiano</option>
+      </select>
+
       <select id="titleDropdown" onchange="navigateToPage(this.value)">
-        <option value="index.html" selected>Home</option>
-        <option value="register.html">Register</option>
-        <option value="signin.html">Sign-In</option>
-        <option value="add-currency.html">Add Currency (£0.99)</option>
-        <option value="contact.html">Contact us</option>
+        <option value="index.html"        data-i18n-nav="navHome"        selected>🏠 Home</option>
+        <option value="add-currency.html" data-i18n-nav="navAddCurrency">➕ Add Currency (£0.99)</option>
+        <option value="contact.html"      data-i18n-nav="navContact">✉️ Contact us</option>
+        <option value="privacy.html"      data-i18n-nav="navPrivacy">🔒 Privacy Policy</option>
+        <option value="signout"           data-i18n-nav="navSignOut">🚪 Sign Out</option>
       </select>
     </div>
 
-    <div class="title-box">Holiday Currency Converter</div>
+    <div class="title-box" data-i18n="appTitle">Holiday Currency Converter</div>
 
-    <!-- Inline message replaces browser pop-ups -->
-    <div id="authWarning" class="auth-warning">
+    <div id="authWarning" class="auth-warning" data-i18n="authWarning">
       🔒 Please <a href="signin.html">Sign In</a> to edit conversion values.
     </div>
 
-    <label for="amount"><b>Amount to Convert:</b></label>
-    <input type="number" id="amount" placeholder="Please sign in to enter amount" step="0.01" disabled>
+    <label for="amount"><b data-i18n="amountLabel">Amount to Convert:</b></label>
+    <input type="number" id="amount"
+           data-i18n-placeholder="amountPlaceholder"
+           placeholder="Please sign in to enter amount"
+           step="0.01" disabled>
 
-    <div id="outputBox">Converted amount will appear here</div>
+    <div id="outputBox" data-i18n="outputDefault">Converted amount will appear here</div>
     <div id="note"></div>
 
-    <label for="fromCurrency" id="fromCurrencyLabel"><b>From Currency:</b></label>
+    <label for="fromCurrency" id="fromCurrencyLabel">
+      <b data-i18n="fromCurrencyLabel">From Currency:</b>
+    </label>
     <select id="fromCurrency"></select>
 
-    <label for="toCurrency"><b>To Currency:</b></label>
+    <label for="toCurrency">
+      <b data-i18n="toCurrencyLabel">To Currency:</b>
+    </label>
     <select id="toCurrency"></select>
 
-    <button id="swapButton" onclick="swapCurrencies()">🔄 Swap Currencies</button>
-    
-    <!-- Button directly underneath Swap Currencies -->
-    <button id="fetchRateBtn" onclick="fetchLiveExchangeRate()">⚡ Fetch Live Exchange Rate</button>
+    <button id="swapButton" onclick="swapCurrencies()" data-i18n="swapBtn">🔄 Swap Currencies</button>
+    <button id="fetchRateBtn" onclick="fetchLiveExchangeRate()" data-i18n="fetchBtn">⚡ Fetch Live Exchange Rate</button>
 
     <div class="manual-rate">
-      <h3>Exchange rate currency bought at:</h3>
+      <h3 data-i18n="manualRateTitle">Exchange rate currency bought at:</h3>
       <div class="row">
         <label id="forwardLabel">From → To:</label>
-        <input type="number" id="manualRateForward" placeholder="Please sign in to enter rate" step="0.0001" disabled>
+        <input type="number" id="manualRateForward"
+               data-i18n-placeholder="ratePlaceholder"
+               placeholder="Please sign in to enter rate"
+               step="0.0001" disabled>
       </div>
       <div class="row" id="inverseContainer">
         <label id="inverseLabel">To → From:</label>
         <input type="number" id="manualRateInverse" placeholder="e.g. 0.80" step="0.0001" disabled>
       </div>
-      <button id="saveButton" onclick="saveSettings()">💾 Save</button>
+      <button id="saveButton" onclick="saveSettings()" data-i18n="saveBtn">💾 Save</button>
     </div>
 
     <div class="add-currency-banner">
-      <h3>Need an additional currency not listed?</h3>
-      <p>Add an additional currency for a one-time fee of <b>£0.99</b>.</p>
-      <button onclick="window.location.href='add-currency.html'">➕ Add an Additional Currency</button>
+      <h3 data-i18n="addBannerTitle">Need an additional currency not listed?</h3>
+      <p data-i18n="addBannerText">Add an additional currency for a one-time fee of <b>£0.99</b>.</p>
+      <button onclick="window.location.href='add-currency.html'"
+              data-i18n="addBannerBtn">➕ Add an Additional Currency</button>
     </div>
-  
+
     <footer class="gallery-footer">
       <div class="copyright">
         <p></p>
-        &copy; 2026 S Allan. All rights reserved.
+        <span data-i18n="footer">&copy; 2026 S Allan. All rights reserved.</span>
       </div>
     </footer>
   </div>
 
+  <!-- Load translations first so t() is available to page JS -->
+  <script src="js/translations.js"></script>
+
   <script>
+    // ── Apply saved language on load ──────────────────────────────
+    (function() {
+      const lang = getLang();
+      document.documentElement.lang = lang;
+      document.getElementById('langPicker').value = lang;
+      applyTranslations(lang);
+      _rebuildNavDropdown(lang);
+    })();
+
+    // ── Navigation ─────────────────────────────────────────────────
     function navigateToPage(url) {
-      if (url) {
-        window.location.href = url;
-      }
+      if (url === 'signout') { handleSignOut(); return; }
+      if (url) window.location.href = url;
     }
 
-    const fromSelect = document.getElementById("fromCurrency");
-    const toSelect = document.getElementById("toCurrency");
-    const outputBox = document.getElementById("outputBox");
-    const noteEl = document.getElementById("note");
+    function handleSignOut() {
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('CognitoIdentityServiceProvider.')) keysToRemove.push(key);
+      }
+      keysToRemove.forEach(k => localStorage.removeItem(k));
+      localStorage.removeItem('cognitoIdToken');
+      localStorage.removeItem('cognitoAccessToken');
+      window.location.href = 'signin.html';
+    }
+
+    // ── DOM refs ───────────────────────────────────────────────────
+    const fromSelect        = document.getElementById("fromCurrency");
+    const toSelect          = document.getElementById("toCurrency");
+    const outputBox         = document.getElementById("outputBox");
+    const noteEl            = document.getElementById("note");
     const manualRateForward = document.getElementById("manualRateForward");
     const manualRateInverse = document.getElementById("manualRateInverse");
-    const amountInput = document.getElementById("amount");
-    const forwardLabel = document.getElementById("forwardLabel");
-    const inverseLabel = document.getElementById("inverseLabel");
-    const authWarning = document.getElementById("authWarning");
-    const fetchRateBtn = document.getElementById("fetchRateBtn");
+    const amountInput       = document.getElementById("amount");
+    const forwardLabel      = document.getElementById("forwardLabel");
+    const inverseLabel      = document.getElementById("inverseLabel");
+    const authWarning       = document.getElementById("authWarning");
+    const fetchRateBtn      = document.getElementById("fetchRateBtn");
 
+    // ── Auth ───────────────────────────────────────────────────────
     function isCognitoSignedIn() {
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key.startsWith("CognitoIdentityServiceProvider.") && key.endsWith(".idToken")) {
-          return true;
-        }
+        if (key.startsWith("CognitoIdentityServiceProvider.") && key.endsWith(".idToken")) return true;
       }
-      if (localStorage.getItem("cognitoAccessToken") || localStorage.getItem("cognitoIdToken")) {
-        return true;
-      }
-      return false;
+      return !!(localStorage.getItem("cognitoAccessToken") || localStorage.getItem("cognitoIdToken"));
     }
 
     function applyAuthProtection() {
-      const authenticated = isCognitoSignedIn();
-
-      if (authenticated) {
-        amountInput.disabled = false;
-        manualRateForward.disabled = false;
-        fetchRateBtn.disabled = false;
-        amountInput.placeholder = "e.g. 100";
-        manualRateForward.placeholder = "e.g. 1.25";
-        authWarning.style.display = "none";
-      } else {
-        amountInput.disabled = true;
-        manualRateForward.disabled = true;
-        fetchRateBtn.disabled = true;
-        amountInput.placeholder = "Sign in to enter amount";
-        manualRateForward.placeholder = "Sign in to enter rate";
-        authWarning.style.display = "block";
-      }
+      const auth = isCognitoSignedIn();
+      amountInput.disabled          = !auth;
+      manualRateForward.disabled    = !auth;
+      fetchRateBtn.disabled         = !auth;
+      amountInput.placeholder       = auth ? t('amountActivePlaceholder') : t('amountPlaceholder');
+      manualRateForward.placeholder = auth ? t('rateActivePlaceholder')   : t('ratePlaceholder');
+      authWarning.style.display     = auth ? "none" : "block";
     }
 
+    // ── Currencies ─────────────────────────────────────────────────
     const currencies = {
-      GBP: "British Pound",      
-      EUR: "Euro",  
-      USD: "US Dollar",
-      AUD: "Australian Dollar",
-      CAD: "Canadian Dollar",
-      CNY: "Chinese Yuan",
-      JPY: "Japanese Yen",
-      NZD: "New Zealand Dollar"
+      GBP: "British Pound", EUR: "Euro", USD: "US Dollar",
+      AUD: "Australian Dollar", CAD: "Canadian Dollar",
+      CNY: "Chinese Yuan", JPY: "Japanese Yen", NZD: "New Zealand Dollar"
     };
 
     function populateSelects() {
-      // Clear existing options to prevent duplicate entries
       fromSelect.innerHTML = "";
-      toSelect.innerHTML = "";
-
-      const savedCurrencies = JSON.parse(localStorage.getItem("customCurrencies")) || {};
-      const allCurrencies = { ...currencies, ...savedCurrencies };
-
-      for (const [code, name] of Object.entries(allCurrencies)) {
-        const opt1 = new Option(`${code} - ${name}`, code);
-        const opt2 = new Option(`${code} - ${name}`, code);
-        fromSelect.add(opt1);
-        toSelect.add(opt2);
+      toSelect.innerHTML   = "";
+      const saved = JSON.parse(localStorage.getItem("customCurrencies")) || {};
+      const all   = { ...currencies, ...saved };
+      for (const [code, name] of Object.entries(all)) {
+        fromSelect.add(new Option(`${code} - ${name}`, code));
+        toSelect.add(new Option(`${code} - ${name}`, code));
       }
-
-      // Restore saved selections, fall back to sensible defaults if not found
-      const savedFrom = localStorage.getItem("fromCurrency") || "GBP";
-      const savedTo   = localStorage.getItem("toCurrency")   || "EUR";
-
-      const availableCodes = Object.keys(allCurrencies);
-
-      const resolvedFrom = availableCodes.includes(savedFrom) ? savedFrom : availableCodes[0];
-
-      // Pick a valid 'to' that is different from 'from'
-      const resolvedTo = availableCodes.includes(savedTo) && savedTo !== resolvedFrom
-        ? savedTo
-        : availableCodes.find(c => c !== resolvedFrom) || availableCodes[0];
-
-      // Set both values directly on the DOM without triggering change events
+      const codes        = Object.keys(all);
+      const savedFrom    = localStorage.getItem("fromCurrency") || "USD";
+      const savedTo      = localStorage.getItem("toCurrency")   || "GBP";
+      const resolvedFrom = codes.includes(savedFrom) ? savedFrom : codes[0];
+      const resolvedTo   = codes.includes(savedTo) && savedTo !== resolvedFrom
+                           ? savedTo : codes.find(c => c !== resolvedFrom) || codes[0];
       fromSelect.value = resolvedFrom;
       toSelect.value   = resolvedTo;
-
-      // Persist the corrected values back to localStorage
       localStorage.setItem("fromCurrency", resolvedFrom);
-      localStorage.setItem("toCurrency", resolvedTo);
-
+      localStorage.setItem("toCurrency",   resolvedTo);
       updateRateLabels();
       loadSavedRate();
     }
 
-    function currencyKey() {
-      return `${fromSelect.value}_${toSelect.value}`;
-    }
+    function currencyKey() { return `${fromSelect.value}_${toSelect.value}`; }
 
     function loadSavedRate() {
-      const savedRates = JSON.parse(localStorage.getItem("savedRates")) || {};
-      const key = currencyKey();
-      if (savedRates[key]) {
-        const rate = savedRates[key];
-        manualRateForward.value = parseFloat(rate).toFixed(4);
-        manualRateInverse.value = (1 / rate).toFixed(4);
+      const rates = JSON.parse(localStorage.getItem("savedRates")) || {};
+      const key   = currencyKey();
+      if (rates[key]) {
+        manualRateForward.value = parseFloat(rates[key]).toFixed(4);
+        manualRateInverse.value = (1 / rates[key]).toFixed(4);
       } else {
         manualRateForward.value = "";
         manualRateInverse.value = "";
@@ -458,151 +401,114 @@
       loadSavedRate();
     }
 
+    // ── Fetch live rate ────────────────────────────────────────────
     async function fetchLiveExchangeRate() {
       if (!isCognitoSignedIn()) return;
+      const from = fromSelect.value, to = toSelect.value;
+      if (!from || !to) { outputBox.textContent = t('selectBothMsg'); noteEl.textContent = ""; return; }
+      if (from === to)  { outputBox.textContent = t('selectDiffMsg'); noteEl.textContent = ""; return; }
 
-      const from = fromSelect.value;
-      const to = toSelect.value;
-
-      if (!from || !to) {
-        outputBox.textContent = "Please select both From and To currencies.";
-        noteEl.textContent = "";
-        return;
-      }
-
-      if (from === to) {
-        outputBox.textContent = "Please select two different currencies.";
-        noteEl.textContent = "";
-        return;
-      }
-
-      fetchRateBtn.disabled = true;
-      fetchRateBtn.textContent = "Fetching Rate...";
+      fetchRateBtn.disabled    = true;
+      fetchRateBtn.textContent = t('fetchingBtn');
 
       try {
         let rate = null;
-
-        // First attempt: use 'from' as the base
-        let response = await fetch(`https://open.er-api.com/v6/latest/${from}`);
-        let data = await response.json();
-
-        if (data && data.result === "success" && data.rates && data.rates[to] !== undefined) {
+        let resp = await fetch(`https://open.er-api.com/v6/latest/${from}`);
+        let data = await resp.json();
+        if (data?.result === "success" && data.rates?.[to] !== undefined) {
           rate = data.rates[to];
         } else {
-          // Fallback: use 'to' as the base and invert
-          response = await fetch(`https://open.er-api.com/v6/latest/${to}`);
-          data = await response.json();
-
-          if (data && data.result === "success" && data.rates && data.rates[from] !== undefined) {
-            rate = 1 / data.rates[from];
-          }
+          resp = await fetch(`https://open.er-api.com/v6/latest/${to}`);
+          data = await resp.json();
+          if (data?.result === "success" && data.rates?.[from] !== undefined) rate = 1 / data.rates[from];
         }
-
         if (rate !== null && rate > 0) {
-          // Use enough decimal places for small-value currencies like VND, LAK
           const decimals = rate < 0.01 ? 6 : rate < 0.1 ? 5 : 4;
           manualRateForward.value = rate.toFixed(decimals);
           manualRateInverse.value = (1 / rate).toFixed(4);
           convertCurrency();
-          noteEl.textContent = `Live rate fetched: 1 ${from} = ${rate.toFixed(decimals)} ${to}`;
+          noteEl.textContent = t('liveRateFetched')
+            .replace('{from}', from).replace('{rate}', rate.toFixed(decimals)).replace('{to}', to);
         } else {
           outputBox.textContent = "—";
-          noteEl.textContent = `Live rate not available for ${from} → ${to}. Please enter the rate manually.`;
+          noteEl.textContent    = t('rateNotAvail').replace('{from}', from).replace('{to}', to);
         }
       } catch (error) {
         console.error("Exchange rate error:", error);
         outputBox.textContent = "—";
-        noteEl.textContent = "Failed to fetch live rate. Please enter the rate manually.";
+        noteEl.textContent    = t('fetchFailed');
       } finally {
-        fetchRateBtn.disabled = false;
-        fetchRateBtn.textContent = "⚡ Fetch Live Exchange Rate";
+        fetchRateBtn.disabled    = false;
+        fetchRateBtn.textContent = t('fetchBtn');
       }
     }
 
+    // ── Convert ────────────────────────────────────────────────────
     function convertCurrency() {
       if (!isCognitoSignedIn()) return;
-
-      const from = fromSelect.value, to = toSelect.value,
-            amount = parseFloat(amountInput.value),
-            rateForward = parseFloat(manualRateForward.value);
-
-      if (isNaN(amount) || amount <= 0) {
-        outputBox.textContent = "—"; noteEl.textContent = ""; return;
-      }
-      if (from === to) {
-        outputBox.textContent = "Please select two different currencies."; noteEl.textContent = ""; return;
-      }
-      if (isNaN(rateForward) || rateForward <= 0) {
-        outputBox.textContent = "Enter a valid exchange rate."; noteEl.textContent = ""; return;
-      }
-      const result = amount * rateForward;
+      const from      = fromSelect.value, to = toSelect.value;
+      const amount    = parseFloat(amountInput.value);
+      const rateForwd = parseFloat(manualRateForward.value);
+      if (isNaN(amount) || amount <= 0)       { outputBox.textContent = "—"; noteEl.textContent = ""; return; }
+      if (from === to)                         { outputBox.textContent = t('selectDiffMsg2'); noteEl.textContent = ""; return; }
+      if (isNaN(rateForwd) || rateForwd <= 0) { outputBox.textContent = t('invalidRateMsg'); noteEl.textContent = ""; return; }
+      const result = amount * rateForwd;
       outputBox.textContent = `${result.toFixed(2)} ${to}`;
-      noteEl.textContent = `Using rate saved for ${from} → ${to}: 1 ${from} = ${rateForward.toFixed(4)} ${to}`;
+      noteEl.textContent    = t('rateSaved')
+        .replace(/\{from\}/g, from).replace('{rate}', rateForwd.toFixed(4)).replace('{to}', to);
     }
 
+    // ── Save ───────────────────────────────────────────────────────
     function saveSettings(rate) {
       localStorage.setItem("fromCurrency", fromSelect.value);
-      localStorage.setItem("toCurrency", toSelect.value);
-
-      if (!isCognitoSignedIn()) {
-        return;
-      }
-
-      const rateForward = rate ? rate : parseFloat(manualRateForward.value);
-      if (isNaN(rateForward) || rateForward <= 0) {
-        return;
-      }
-      const savedRates = JSON.parse(localStorage.getItem("savedRates")) || {};
-      savedRates[currencyKey()] = rateForward;
-      localStorage.setItem("savedRates", JSON.stringify(savedRates));
+      localStorage.setItem("toCurrency",   toSelect.value);
+      if (!isCognitoSignedIn()) return;
+      const rateForwd = rate ? rate : parseFloat(manualRateForward.value);
+      if (isNaN(rateForwd) || rateForwd <= 0) return;
+      const rates = JSON.parse(localStorage.getItem("savedRates")) || {};
+      rates[currencyKey()] = rateForwd;
+      localStorage.setItem("savedRates", JSON.stringify(rates));
     }
 
+    // ── Swap ───────────────────────────────────────────────────────
+    function swapCurrencies() {
+      const tmp        = fromSelect.value;
+      fromSelect.value = toSelect.value;
+      toSelect.value   = tmp;
+      localStorage.setItem("fromCurrency", fromSelect.value);
+      localStorage.setItem("toCurrency",   toSelect.value);
+      const cur = parseFloat(manualRateForward.value);
+      let inverted = null;
+      if (!isNaN(cur) && cur > 0) {
+        inverted = 1 / cur;
+        manualRateForward.value = inverted.toFixed(4);
+        manualRateInverse.value = (1 / inverted).toFixed(4);
+        const rates = JSON.parse(localStorage.getItem("savedRates")) || {};
+        rates[currencyKey()] = inverted;
+        localStorage.setItem("savedRates", JSON.stringify(rates));
+      }
+      updateRateLabels();
+      convertCurrency();
+      if (inverted && isCognitoSignedIn()) saveSettings(inverted);
+    }
+
+    // ── Event listeners ────────────────────────────────────────────
     manualRateForward.addEventListener("input", () => {
       const val = parseFloat(manualRateForward.value);
-      manualRateInverse.value = !isNaN(val) && val > 0 ? (1 / val).toFixed(4) : "";
+      manualRateInverse.value = (!isNaN(val) && val > 0) ? (1 / val).toFixed(4) : "";
       convertCurrency();
     });
-
     amountInput.addEventListener("input", convertCurrency);
     fromSelect.addEventListener("change", () => {
       localStorage.setItem("fromCurrency", fromSelect.value);
-      updateRateLabels();
-      convertCurrency();
+      updateRateLabels(); convertCurrency();
     });
     toSelect.addEventListener("change", () => {
       localStorage.setItem("toCurrency", toSelect.value);
-      updateRateLabels();
-      convertCurrency();
+      updateRateLabels(); convertCurrency();
     });
 
-    function swapCurrencies() {
-      const tempFrom = fromSelect.value;
-      fromSelect.value = toSelect.value;
-      toSelect.value = tempFrom;
-
-      localStorage.setItem("fromCurrency", fromSelect.value);
-      localStorage.setItem("toCurrency", toSelect.value);
-
-      const currentRate = parseFloat(manualRateForward.value);
-      let invertedRate = null;
-
-      if (!isNaN(currentRate) && currentRate > 0) {
-        invertedRate = 1 / currentRate;
-        manualRateForward.value = invertedRate.toFixed(4);
-        manualRateInverse.value = (1 / invertedRate).toFixed(4);
-        const savedRates = JSON.parse(localStorage.getItem("savedRates")) || {};
-        savedRates[currencyKey()] = invertedRate;
-        localStorage.setItem("savedRates", JSON.stringify(savedRates));
-      }
-
-      updateRateLabels();
-      convertCurrency();
-
-      if (invertedRate && isCognitoSignedIn()) {
-        saveSettings(invertedRate);
-      }
-    }
-
+    // ── Init ───────────────────────────────────────────────────────
     populateSelects();
     applyAuthProtection();
     convertCurrency();

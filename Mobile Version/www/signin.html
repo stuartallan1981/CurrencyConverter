@@ -5,9 +5,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Sign In - Holiday Currency Converter</title>
+  <title>Sign In / Register - Holiday Currency Converter</title>
   <link rel="stylesheet" href="css/app.css" />
   <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.7/dist/amazon-cognito-identity.min.js"></script>
+  <style>
+    .tab-row {
+      display: flex;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #007bff;
+      margin-bottom: 20px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 12px;
+      font-size: 15px;
+      font-weight: bold;
+      border: none;
+      border-radius: 0;
+      margin: 0;
+      cursor: pointer;
+      background: #fff;
+      color: #007bff;
+      transition: background 0.2s, color 0.2s;
+    }
+    .tab-btn.active {
+      background: #007bff;
+      color: #fff;
+    }
+    .tab-btn:active {
+      transform: none;
+    }
+    .tab-panel {
+      display: none;
+    }
+    .tab-panel.active {
+      display: block;
+    }
+  </style>
 </head>
 <body>
 
@@ -17,32 +52,101 @@
     <div class="main-content">
       <div class="card">
 
-        <div class="title-box">Sign In</div>
+        <div class="title-box" data-i18n="signInTitle">Holiday Currency Converter</div>
+
+        <!-- Tab switcher -->
+        <div class="tab-row" role="tablist" aria-label="Sign in or register">
+          <button class="tab-btn active" id="tabSignIn" role="tab" aria-selected="true"
+                  aria-controls="panelSignIn" onclick="switchTab('signin')"
+                  data-i18n="tabSignIn">Sign In</button>
+          <button class="tab-btn" id="tabRegister" role="tab" aria-selected="false"
+                  aria-controls="panelRegister" onclick="switchTab('register')"
+                  data-i18n="tabRegister">Register</button>
+        </div>
 
         <div id="statusMessage" class="status-msg" role="alert"></div>
 
-        <form id="signInForm" onsubmit="handleSignIn(event)" novalidate>
-          <label for="username">Email Address</label>
-          <input type="email" id="username" placeholder="name@example.com"
-                 inputmode="email" autocomplete="email" autocapitalize="off"
-                 spellcheck="false" required>
+        <!-- Sign In panel -->
+        <div id="panelSignIn" class="tab-panel active" role="tabpanel" aria-labelledby="tabSignIn">
+          <form id="signInForm" onsubmit="handleSignIn(event)" novalidate>
+            <label for="siEmail" data-i18n="emailLabel">Email Address</label>
+            <input type="email" id="siEmail"
+                   data-i18n-placeholder="emailPlaceholder"
+                   placeholder="name@example.com"
+                   inputmode="email" autocomplete="email" autocapitalize="off"
+                   spellcheck="false" required>
 
-          <label for="password">Password</label>
-          <input type="password" id="password" placeholder="Enter password"
-                 autocomplete="current-password" required>
+            <label for="siPassword" data-i18n="passwordLabel">Password</label>
+            <div style="position:relative;">
+              <input type="password" id="siPassword"
+                     data-i18n-placeholder="signInPasswordPlaceholder"
+                     placeholder="Enter password"
+                     autocomplete="current-password" required
+                     style="padding-right:44px;">
+              <button type="button" onclick="togglePassword('siPassword', 'siEyeBtn')"
+                      id="siEyeBtn"
+                      data-i18n-aria="showPasswordLabel"
+                      aria-label="Show password"
+                      style="position:absolute; right:0; top:0; height:100%; width:42px;
+                             background:none; border:none; cursor:pointer; font-size:18px;
+                             color:#666; display:flex; align-items:center; justify-content:center;
+                             margin:0; padding:0;">
+                👁
+              </button>
+            </div>
 
-          <button type="submit" class="btn-primary">Sign In</button>
-        </form>
+            <div style="display:flex; align-items:center; gap:8px; margin:10px 0 4px;">
+              <input type="checkbox" id="rememberEmail"
+                     style="width:18px; height:18px; margin:0; cursor:pointer; flex-shrink:0;">
+              <label for="rememberEmail"
+                     style="margin:0; font-weight:normal; font-size:14px; cursor:pointer;"
+                     data-i18n="rememberEmail">
+                Remember my email address
+              </label>
+            </div>
 
-        <div class="link-box">
-          Need an account? <a href="register.html">Create one here</a>
+            <button type="submit" class="btn-primary" data-i18n="signInBtn">Sign In</button>
+          </form>
+        </div>
+
+        <!-- Register panel -->
+        <div id="panelRegister" class="tab-panel" role="tabpanel" aria-labelledby="tabRegister">
+          <form id="registerForm" onsubmit="handleSignUp(event)" novalidate>
+            <label for="regEmail" data-i18n="emailLabel">Email Address</label>
+            <input type="email" id="regEmail"
+                   data-i18n-placeholder="emailPlaceholder"
+                   placeholder="name@example.com"
+                   inputmode="email" autocomplete="email" autocapitalize="off"
+                   spellcheck="false" required>
+
+            <label for="regPassword" data-i18n="passwordLabel">Password</label>
+            <div style="position:relative;">
+              <input type="password" id="regPassword"
+                     data-i18n-placeholder="regPasswordPlaceholder"
+                     placeholder="At least 8 characters"
+                     autocomplete="new-password" minlength="8" required
+                     style="padding-right:44px;">
+              <button type="button" onclick="togglePassword('regPassword', 'regEyeBtn')"
+                      id="regEyeBtn"
+                      data-i18n-aria="showPasswordLabel"
+                      aria-label="Show password"
+                      style="position:absolute; right:0; top:0; height:100%; width:42px;
+                             background:none; border:none; cursor:pointer; font-size:18px;
+                             color:#666; display:flex; align-items:center; justify-content:center;
+                             margin:0; padding:0;">
+                👁
+              </button>
+            </div>
+
+            <button type="submit" class="btn-primary" data-i18n="createAccountBtn">Create Account</button>
+          </form>
         </div>
 
       </div><!-- /.card -->
     </div><!-- /.main-content -->
 
     <footer class="page-footer">
-      &copy; 2026 S Allan. All rights reserved.
+      <span data-i18n="footer">&copy; 2026 S Allan. All rights reserved.</span>
     </footer>
   </div><!-- /.page-wrapper -->
 
@@ -57,49 +161,106 @@
       userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
     }
 
+    function togglePassword(inputId, btnId) {
+      const input = document.getElementById(inputId);
+      const btn   = document.getElementById(btnId);
+      const show  = input.type === 'password';
+      input.type      = show ? 'text' : 'password';
+      btn.textContent = show ? '🙈' : '👁';
+      btn.setAttribute('aria-label', show ? t('hidePasswordLabel') : t('showPasswordLabel'));
+    }
+
+    function switchTab(tab) {
+      const isSignIn = tab === 'signin';
+      document.getElementById('tabSignIn').classList.toggle('active', isSignIn);
+      document.getElementById('tabRegister').classList.toggle('active', !isSignIn);
+      document.getElementById('tabSignIn').setAttribute('aria-selected', isSignIn);
+      document.getElementById('tabRegister').setAttribute('aria-selected', !isSignIn);
+      document.getElementById('panelSignIn').classList.toggle('active', isSignIn);
+      document.getElementById('panelRegister').classList.toggle('active', !isSignIn);
+      const el = document.getElementById('statusMessage');
+      el.textContent = '';
+      el.style.display = 'none';
+      el.className = 'status-msg';
+    }
+
     function showStatus(message, isError = false) {
-      const el = document.getElementById("statusMessage");
-      el.textContent = message;
-      el.className   = "status-msg " + (isError ? "error" : "success");
-      el.style.display = "block";
+      const el = document.getElementById('statusMessage');
+      el.textContent   = message;
+      el.className     = 'status-msg ' + (isError ? 'error' : 'success');
+      el.style.display = 'block';
     }
 
     function handleSignIn(event) {
       event.preventDefault();
+      if (!userPool) { showStatus(t('sdkNotLoadedMsg'), true); return; }
 
-      if (!userPool) {
-        showStatus("Cognito SDK not loaded. Check your internet connection.", true);
-        return;
-      }
-
-      const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value;
+      const email    = document.getElementById('siEmail').value.trim();
+      const password = document.getElementById('siPassword').value;
 
       const authDetails = new AmazonCognitoIdentity.AuthenticationDetails({
-        Username: username,
-        Password: password
+        Username: email, Password: password
       });
-
       const cognitoUser = new AmazonCognitoIdentity.CognitoUser({
-        Username: username,
-        Pool: userPool
+        Username: email, Pool: userPool
       });
 
       cognitoUser.authenticateUser(authDetails, {
         onSuccess(result) {
-          localStorage.setItem("cognitoIdToken",     result.getIdToken().getJwtToken());
-          localStorage.setItem("cognitoAccessToken", result.getAccessToken().getJwtToken());
-          showStatus("✅ Signed in successfully! Redirecting...");
-          setTimeout(() => { window.location.href = "index.html"; }, 1500);
+          localStorage.setItem('cognitoIdToken',     result.getIdToken().getJwtToken());
+          localStorage.setItem('cognitoAccessToken', result.getAccessToken().getJwtToken());
+          if (document.getElementById('rememberEmail').checked) {
+            localStorage.setItem('rememberedEmail', email);
+          } else {
+            localStorage.removeItem('rememberedEmail');
+          }
+          showStatus(t('signedInMsg'));
+          setTimeout(() => { window.location.href = 'index.html'; }, 1200);
         },
-        onFailure(err) {
-          showStatus(err.message || JSON.stringify(err), true);
-        }
+        onFailure(err) { showStatus(err.message || JSON.stringify(err), true); }
       });
     }
+
+    function handleSignUp(event) {
+      event.preventDefault();
+      if (!userPool) { showStatus(t('sdkNotLoadedMsg'), true); return; }
+
+      const email    = document.getElementById('regEmail').value.trim();
+      const password = document.getElementById('regPassword').value;
+
+      const attributeList = [
+        new AmazonCognitoIdentity.CognitoUserAttribute({ Name: 'email', Value: email })
+      ];
+
+      userPool.signUp(email, password, attributeList, null, (err) => {
+        if (err) { showStatus(err.message || JSON.stringify(err), true); return; }
+        showStatus(t('accountCreatedMsg'));
+        setTimeout(() => {
+          window.location.href = 'verify.html?email=' + encodeURIComponent(email);
+        }, 1000);
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('CognitoIdentityServiceProvider.') && key.endsWith('.idToken')) {
+          window.location.replace('index.html'); return;
+        }
+      }
+      if (localStorage.getItem('cognitoAccessToken') || localStorage.getItem('cognitoIdToken')) {
+        window.location.replace('index.html');
+      }
+      const remembered = localStorage.getItem('rememberedEmail');
+      if (remembered) {
+        document.getElementById('siEmail').value = remembered;
+        document.getElementById('rememberEmail').checked = true;
+      }
+    });
   </script>
 
+  <script src="js/translations.js"></script>
   <script src="js/nav.js"></script>
-  <script>initNav('Sign In', 'signin.html');</script>
+  <script>initNav('Holiday Currency Converter', 'signin.html');</script>
 </body>
 </html>

@@ -1,97 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Privacy Policy - Holiday Currency Converter</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            line-height: 1.6;
-            color: #333333;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f9f9f9;
-        }
-        .container {
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            color: #1a1a1a;
-            border-bottom: 2px solid #eaeaea;
-            padding-bottom: 10px;
-        }
-        h2 {
-            color: #2c3e50;
-            margin-top: 25px;
-        }
-        ul {
-            padding-left: 20px;
-        }
-        li {
-            margin-bottom: 8px;
-        }
-        .footer {
-            margin-top: 30px;
-            font-size: 0.9em;
-            color: #777777;
-            text-align: center;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy - Holiday Currency Converter</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+    .container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 { color: #1a1a1a; border-bottom: 2px solid #eaeaea; padding-bottom: 10px; }
+    h2 { color: #2c3e50; margin-top: 25px; }
+    ul  { padding-left: 20px; }
+    li  { margin-bottom: 8px; }
+    .footer { margin-top: 30px; font-size: 0.9em; color: #777; text-align: center; }
+
+    /* ── Top bar: language left, nav right ── */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      gap: 8px;
+    }
+    .top-bar select {
+      width: auto;
+      padding: 6px 10px;
+      font-size: 13px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background: #fff;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Privacy Policy</h1>
-        <p><strong>Effective Date:</strong> August 29, 2026</p>
-        <p><strong>Holiday Currency Converter</strong> ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how your personal information is collected, used, and safeguarded when you use our mobile application and related web services.</p>
+  <div class="container">
 
-        <h2>1. Information We Collect</h2>
-        <p>We collect information to provide better services to our users. The types of information we collect include:</p>
-        <ul>
-            <li><strong>Account Information:</strong> When you register, sign in, or verify an account, we collect personal information such as your email address and login credentials.</li>
-            <li><strong>Financial & Wallet Data:</strong> Information regarding currency calculations, tracked wallet balances, and user preferences saved inside the app.</li>
-            <li><strong>Transaction Information:</strong> Information necessary to process payments, such as payment status and order details.</li>
-        </ul>
-
-        <h2>2. Third-Party Services</h2>
-        <p>We integrate trusted third-party services to handle authentication and payments securely:</p>
-        <ul>
-            <li><strong>Amazon Web Services (AWS) Cognito:</strong> Manages identity authentication, sign-ins, and account registration. Your credentials are securely processed in compliance with AWS security standards.</li>
-            <li><strong>PayPal SDK:</strong> Facilitates payment processing for currency transactions. We do not directly store or process complete credit card details or bank credentials on our servers.</li>
-        </ul>
-
-        <h2>3. How We Use Information</h2>
-        <p>Your information is used strictly to:</p>
-        <ul>
-            <li>Authenticate user access and maintain continuous app sessions via secure tokens.</li>
-            <li>Process currency calculations and track user-added currencies.</li>
-            <li>Execute secure payments and transactions requested through PayPal.</li>
-            <li>Provide customer support and respond to app inquiries.</li>
-        </ul>
-
-        <h2>4. Data Storage and Security</h2>
-        <p>We implement strict security measures to protect your data:</p>
-        <ul>
-            <li>All communications with external servers and APIs are encrypted using standard HTTPS/TLS protocols.</li>
-            <li>Authentication tokens are securely stored locally on your device within native storage APIs managed by Capacitor.</li>
-        </ul>
-
-        <h2>5. Account Deletion & Data Rights</h2>
-        <p>You have the right to access, update, or delete your personal information at any time. If you wish to permanently delete your account and associated data from our systems, please contact us via our in-app Contact page.</p>
-
-        <h2>6. Children's Privacy</h2>
-        <p>Our app is not intended for use by children under the age of 13. We do not knowingly collect personal identifiable information from children under 13.</p>
-
-        <h2>7. Contact Us</h2>
-        <p>If you have any questions or concerns regarding this Privacy Policy, please contact us  via our in-app Contact page.</p>
+    <!-- ── Top bar ── -->
+    <div class="top-bar">
+      <select class="lang-picker" id="langPicker" aria-label="Select language" onchange="setLang(this.value)">
+        <option value="en">🇬🇧 English</option>
+        <option value="fr">🇫🇷 Français</option>
+        <option value="es">🇪🇸 Español</option>
+        <option value="de">🇩🇪 Deutsch</option>
+        <option value="it">🇮🇹 Italiano</option>
+      </select>
+      <select id="titleDropdown" onchange="navigateToPage(this.value)">
+        <option value="privacy.html"      data-i18n-nav="navPrivacy"     selected>🔒 Privacy Policy</option>
+        <option value="index.html"        data-i18n-nav="navHome">🏠 Home</option>
+        <option value="contact.html"      data-i18n-nav="navContact">✉️ Contact us</option>
+        <option value="add-currency.html" data-i18n-nav="navAddCurrency">➕ Add Currency (£0.99)</option>
+        <option value="signout"           data-i18n-nav="navSignOut">🚪 Sign Out</option>
+      </select>
     </div>
 
-    <div class="footer">
-        <p>&copy; 2026 Holiday Currency Converter. All rights reserved.</p>
-    </div>
+    <h1 data-i18n="privacyTitle">Privacy Policy</h1>
+    <p data-i18n="privacyEffective"><strong>Effective Date:</strong> August 29, 2026</p>
+    <p data-i18n="privacyIntro"><strong>Holiday Currency Converter</strong> ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how your personal information is collected, used, and safeguarded when you use our mobile application and related web services.</p>
+
+    <h2 data-i18n="privacyH1">1. Information We Collect</h2>
+    <p data-i18n="privacyP1">We collect information to provide better services to our users. The types of information we collect include:</p>
+    <ul>
+      <li data-i18n="privacyL1a"><strong>Account Information:</strong> When you register, sign in, or verify an account, we collect personal information such as your email address and login credentials.</li>
+      <li data-i18n="privacyL1b"><strong>Financial &amp; Wallet Data:</strong> Information regarding currency calculations, tracked wallet balances, and user preferences saved inside the app.</li>
+      <li data-i18n="privacyL1c"><strong>Transaction Information:</strong> Information necessary to process payments, such as payment status and order details.</li>
+    </ul>
+
+    <h2 data-i18n="privacyH2">2. Third-Party Services</h2>
+    <p data-i18n="privacyP2">We integrate trusted third-party services to handle authentication and payments securely:</p>
+    <ul>
+      <li data-i18n="privacyL2a"><strong>Amazon Web Services (AWS) Cognito:</strong> Manages identity authentication, sign-ins, and account registration. Your credentials are securely processed in compliance with AWS security standards.</li>
+      <li data-i18n="privacyL2b"><strong>PayPal SDK:</strong> Facilitates payment processing for currency transactions. We do not directly store or process complete credit card details or bank credentials on our servers.</li>
+    </ul>
+
+    <h2 data-i18n="privacyH3">3. How We Use Information</h2>
+    <p data-i18n="privacyP3">Your information is used strictly to:</p>
+    <ul>
+      <li data-i18n="privacyL3a">Authenticate user access and maintain continuous app sessions via secure tokens.</li>
+      <li data-i18n="privacyL3b">Process currency calculations and track user-added currencies.</li>
+      <li data-i18n="privacyL3c">Execute secure payments and transactions requested through PayPal.</li>
+      <li data-i18n="privacyL3d">Provide customer support and respond to app inquiries.</li>
+    </ul>
+
+    <h2 data-i18n="privacyH4">4. Data Storage and Security</h2>
+    <p data-i18n="privacyP4">We implement strict security measures to protect your data:</p>
+    <ul>
+      <li data-i18n="privacyL4a">All communications with external servers and APIs are encrypted using standard HTTPS/TLS protocols.</li>
+      <li data-i18n="privacyL4b">Authentication tokens are securely stored locally on your device within native storage APIs managed by Capacitor.</li>
+    </ul>
+
+    <h2 data-i18n="privacyH5">5. Account Deletion &amp; Data Rights</h2>
+    <p data-i18n="privacyP5">You have the right to access, update, or delete your personal information at any time. If you wish to permanently delete your account and associated data from our systems, please contact us via our in-app Contact page.</p>
+
+    <h2 data-i18n="privacyH6">6. Children's Privacy</h2>
+    <p data-i18n="privacyP6">Our app is not intended for use by children under the age of 13. We do not knowingly collect personal identifiable information from children under 13.</p>
+
+    <h2 data-i18n="privacyH7">7. Contact Us</h2>
+    <p data-i18n="privacyP7">If you have any questions or concerns regarding this Privacy Policy, please contact us via our in-app Contact page.</p>
+
+  </div>
+
+  <div class="footer">
+    <p><span data-i18n="footer">&copy; 2026 S Allan. All rights reserved.</span></p>
+  </div>
+
+  <script src="js/translations.js"></script>
+  <script>
+    (function() {
+      const lang = getLang();
+      document.documentElement.lang = lang;
+      document.getElementById('langPicker').value = lang;
+      applyTranslations(lang);
+      _rebuildNavDropdown(lang);
+    })();
+
+    function navigateToPage(url) {
+      if (url === 'signout') { handleSignOut(); return; }
+      if (url) window.location.href = url;
+    }
+    function handleSignOut() {
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('CognitoIdentityServiceProvider.')) keysToRemove.push(key);
+      }
+      keysToRemove.forEach(k => localStorage.removeItem(k));
+      localStorage.removeItem('cognitoIdToken');
+      localStorage.removeItem('cognitoAccessToken');
+      window.location.href = 'signin.html';
+    }
+  </script>
 </body>
 </html>

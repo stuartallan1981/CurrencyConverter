@@ -18,6 +18,9 @@ html, body {
   color: #333;
   /* Prevent text size inflation on orientation change */
   -webkit-text-size-adjust: 100%;
+  /* Never allow the page to scroll sideways / appear too wide */
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 /* Safe-area insets for notched phones (iPhone X+, Android cutouts) */
@@ -172,9 +175,11 @@ body {
 .main-content {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   padding: 20px 16px;
   padding-bottom: calc(20px + env(safe-area-inset-bottom));
+  max-width: 100%;
 }
 
 /* ---------- Card ---------- */
@@ -383,15 +388,21 @@ button:active {
   font-size: 13px;
   font-weight: normal;
   color: #555;
-  white-space: nowrap;
-  flex: 1;
+  /* Allow the label to wrap instead of forcing the row wider than the screen */
+  white-space: normal;
+  overflow-wrap: anywhere;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 .rate-row input {
-  width: 140px;
-  flex-shrink: 0;
+  /* Cap the width but allow it to shrink on very narrow screens */
+  width: 130px;
+  max-width: 45%;
+  flex-shrink: 1;
   margin: 0;
   padding: 10px 12px;
   font-size: 15px;
+  min-width: 0;
 }
 
 /* ---------- Add currency banner ---------- */
@@ -476,4 +487,81 @@ button:active {
 #paypal-button-container,
 #paypal-container-2LY9HVYP4BJC6 {
   margin-top: 12px;
+}
+
+/* ---------- Language picker (top-nav) ---------- */
+.lang-picker {
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.45);
+  border-radius: 6px;
+  padding: 5px 6px;
+  font-size: 13px;
+  font-family: Arial, sans-serif;
+  cursor: pointer;
+  flex-shrink: 0;
+  /* keep it compact in the top bar */
+  width: auto;
+  margin: 0;
+  /* native select arrow stays readable on dark bg */
+  -webkit-appearance: auto;
+  appearance: auto;
+}
+
+.lang-picker:focus {
+  outline: 2px solid rgba(255,255,255,0.8);
+  outline-offset: 2px;
+  box-shadow: none;
+  border-color: transparent;
+}
+
+/* Options are rendered by the OS; these hints help on Android */
+.lang-picker option {
+  background: #fff;
+  color: #333;
+  font-size: 14px;
+}
+
+/* ---------- Language row inside the nav drawer ---------- */
+.nav-lang-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  border-top: 2px solid #eaeaea;
+  margin-top: 4px;
+}
+
+.nav-lang-row span {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+}
+
+.nav-lang-row .nav-icon {
+  font-size: 20px;
+  width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.nav-drawer-lang {
+  margin-left: auto;
+  background: #f4f6f8;
+  color: #333;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 14px;
+  width: auto;
+  cursor: pointer;
+  -webkit-appearance: auto;
+  appearance: auto;
+}
+
+.nav-drawer-lang:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0,123,255,0.15);
 }

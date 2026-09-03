@@ -5,30 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Contact Us - Holiday Currency Converter</title>
   <style>
-      .top-nav {
-          display: flex;
-          justify-content: flex-end;
-          margin-bottom: 25px;
-          padding-bottom: 15px;
-          border-bottom: 1px solid #eaeaea;
-      }
-      .nav-link {
-          text-decoration: none;
-          color: #007bff;
-          font-weight: 500;
-          font-size: 1.05em;
-          transition: color 0.2s ease;
-      }
-      .nav-link:hover {
-          color: #0056b3;
-          text-decoration: underline;
-      }
-      .nav-link.active {
-          color: #333;
-          font-weight: bold;
-          pointer-events: none;
-      }
-    
     body {
       font-family: Arial, sans-serif;
       background: #f4f6f8;
@@ -45,14 +21,34 @@
       background: #fff;
       padding: 25px 30px;
       border-radius: 10px;
-      box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 3px 15px rgba(0,0,0,0.1);
       width: 440px;
       text-align: center;
       overflow-y: auto;
       max-height: 95vh;
     }
 
-    /* Title box */
+    /* ── Top bar ── */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: -10px;
+      margin-bottom: 15px;
+      gap: 8px;
+    }
+
+    .top-bar select {
+      width: auto;
+      margin: 0;
+      padding: 6px 10px;
+      font-size: 13px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background: #fff;
+    }
+
     .title-box {
       background-color: #007bff;
       color: #fff;
@@ -65,25 +61,7 @@
       letter-spacing: 0.5px;
     }
 
-    .title-dropdown-container {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: -10px;
-      margin-bottom: 15px;
-    }
-
-    .title-dropdown-container select {
-      width: auto;
-      margin: 0;
-      padding: 6px 12px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-
-    select,
-    input,
-    textarea,
-    button {
+    select, input, textarea, button {
       width: 100%;
       padding: 10px;
       margin: 8px 0;
@@ -108,7 +86,6 @@
       text-align: left;
     }
 
-    /* Primary button matching index.html structure */
     .submit-btn {
       background-color: #007bff;
       color: white;
@@ -119,11 +96,8 @@
       transition: background-color 0.2s ease;
     }
 
-    .submit-btn:hover {
-      background-color: #0056b3;
-    }
+    .submit-btn:hover { background-color: #0056b3; }
 
-    /* Footer Styles matching index.html */
     .gallery-footer {
       margin-top: 25px;
       padding-top: 15px;
@@ -132,85 +106,117 @@
       font-size: 0.9em;
       color: #555;
     }
-    .copyright {
-      opacity: 0.8;
-    }
   </style>
 </head>
 <body>
 
   <div class="converter">
-    <div class="title-dropdown-container">
+
+    <!-- ── Top bar: language left, nav right ── -->
+    <div class="top-bar">
+      <select class="lang-picker" id="langPicker" aria-label="Select language"
+              onchange="setLang(this.value)">
+        <option value="en">🇬🇧 English</option>
+        <option value="fr">🇫🇷 Français</option>
+        <option value="es">🇪🇸 Español</option>
+        <option value="de">🇩🇪 Deutsch</option>
+        <option value="it">🇮🇹 Italiano</option>
+      </select>
+
       <select id="titleDropdown" onchange="navigateToPage(this.value)">
-        <option value="contact.html">Contact us</option>        
-        <option value="index.html">Home</option>
-        <option value="register.html">Register</option>
-        <option value="signin.html">Sign-In</option>
-        <option value="add-currency.html">Add Currency (£0.99)</option>
+        <option value="contact.html"      data-i18n-nav="navContact"     selected>✉️ Contact us</option>
+        <option value="index.html"        data-i18n-nav="navHome">🏠 Home</option>
+        <option value="add-currency.html" data-i18n-nav="navAddCurrency">➕ Add Currency (£0.99)</option>
+        <option value="privacy.html"      data-i18n-nav="navPrivacy">🔒 Privacy Policy</option>
+        <option value="signout"           data-i18n-nav="navSignOut">🚪 Sign Out</option>
       </select>
     </div>
 
-    <div class="title-box">Contact Us</div>
+    <div class="title-box" data-i18n="contactTitle">Contact Us</div>
 
     <div class="contact-intro">
-      <p>Have questions about the holiday currency converter or adding custom currencies? Send us a message below.</p>
+      <p data-i18n="contactIntro">Have questions about the holiday currency converter or adding custom currencies? Send us a message below.</p>
     </div>
 
-    <!-- Contact Form Content -->
     <form id="contact-form">
-      <label for="name"><b>Name:</b></label>
-      <input type="text" id="name" name="name" placeholder="Your name" required>
+      <label for="name"><b data-i18n="nameLabel">Name:</b></label>
+      <input type="text" id="name" name="name"
+             data-i18n-placeholder="namePlaceholder"
+             placeholder="Your name" required>
 
-      <label for="email"><b>Email:</b></label>
-      <input type="email" id="email" name="email" placeholder="Your email address" required>
+      <label for="email"><b data-i18n="emailLabel">Email:</b></label>
+      <input type="email" id="email" name="email"
+             data-i18n-placeholder="emailPlaceholder"
+             placeholder="Your email address" required>
 
-      <label for="message"><b>Message:</b></label>
-      <textarea id="message" name="message" rows="4" placeholder="How can we help?" required></textarea>
+      <label for="message"><b data-i18n="messageLabel">Message:</b></label>
+      <textarea id="message" name="message" rows="4"
+                data-i18n-placeholder="messagePlaceholder"
+                placeholder="How can we help?" required></textarea>
 
-      <button type="submit" class="submit-btn">✉️ Send Message</button>
+      <button type="submit" class="submit-btn" data-i18n="sendBtn">✉️ Send Message</button>
     </form>
-  
+
     <footer class="gallery-footer">
       <div class="copyright">
         <p></p>
-        &copy; 2026 S Allan. All rights reserved.
+        <span data-i18n="footer">&copy; 2026 S Allan. All rights reserved.</span>
       </div>
     </footer>
   </div>
 
+  <script src="js/translations.js"></script>
+
   <script>
+    // ── Apply saved language on load ──────────────────────────────
+    (function() {
+      const lang = getLang();
+      document.documentElement.lang = lang;
+      document.getElementById('langPicker').value = lang;
+      applyTranslations(lang);
+      _rebuildNavDropdown(lang);
+    })();
+
     function navigateToPage(url) {
-      if (url) {
-        window.location.href = url;
+      if (url === 'signout') { handleSignOut(); return; }
+      if (url) window.location.href = url;
+    }
+
+    function handleSignOut() {
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('CognitoIdentityServiceProvider.')) keysToRemove.push(key);
       }
+      keysToRemove.forEach(k => localStorage.removeItem(k));
+      localStorage.removeItem('cognitoIdToken');
+      localStorage.removeItem('cognitoAccessToken');
+      window.location.href = 'signin.html';
     }
 
     const API_BASE = 'https://teiit1vla3.execute-api.eu-west-2.amazonaws.com/prod';
+
     document.getElementById('contact-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = {
-        name: document.getElementById('name').value,
-        email: document.getElementById('email').value,
+        name:    document.getElementById('name').value,
+        email:   document.getElementById('email').value,
         message: document.getElementById('message').value
       };
-
       try {
         const response = await fetch(`${API_BASE}/contact`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
         });
-
         if (response.ok) {
-          alert('Thank You! Message sent successfully!');
+          alert(t('messageSent'));
           document.getElementById('contact-form').reset();
         } else {
-          alert('Failed to send message. Please try again.');
+          alert(t('messageFailed'));
         }
       } catch (err) {
-        alert('Error connecting to the service.');
+        alert(t('connectionError'));
       }
     });
   </script>

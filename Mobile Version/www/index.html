@@ -7,6 +7,29 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Holiday Currency Converter</title>
+
+  <!-- ── Auth gate: run before ANY page content renders ──────────────
+       If the user is not signed in, go straight to the sign-in page.
+       Signed-in users continue to the converter below. -->
+  <script>
+    (function () {
+      var signedIn = false;
+      for (var i = 0; i < localStorage.length; i++) {
+        var key = localStorage.key(i);
+        if (key && key.indexOf('CognitoIdentityServiceProvider.') === 0 && key.slice(-8) === '.idToken') {
+          signedIn = true;
+          break;
+        }
+      }
+      if (!signedIn) {
+        signedIn = !!(localStorage.getItem('cognitoAccessToken') || localStorage.getItem('cognitoIdToken'));
+      }
+      if (!signedIn) {
+        window.location.replace('signin.html');
+      }
+    })();
+  </script>
+
   <link rel="stylesheet" href="css/app.css" />
 </head>
 <body>
@@ -17,57 +40,68 @@
     <div class="main-content">
       <div class="card">
 
-        <div class="title-box">Holiday Currency Converter</div>
+        <div class="title-box" data-i18n="appTitle">Holiday Currency Converter</div>
 
         <!-- Auth warning -->
         <div id="authWarning" class="auth-warning" role="alert">
-          🔒 Please <a href="signin.html">Sign In</a> to edit conversion values.
+          🔒 <span data-i18n="authWarning">Please </span><a href="signin.html" data-i18n="authWarningLink">Sign In</a><span> to edit conversion values.</span>
         </div>
 
-        <label for="amount"><b>Amount to Convert:</b></label>
-        <input type="number" id="amount" placeholder="Sign in to enter amount"
+        <label for="amount"><b data-i18n="amountLabel">Amount to Convert:</b></label>
+        <input type="number" id="amount"
+               data-i18n-placeholder="amountPlaceholder"
+               placeholder="Sign in to enter amount"
                inputmode="decimal" step="0.01" disabled>
 
-        <div id="outputBox" class="output-box" aria-live="polite">
-          Converted amount will appear here
-        </div>
+        <div id="outputBox" class="output-box" aria-live="polite"
+             data-i18n="outputDefault">Converted amount will appear here</div>
         <p id="note" class="note"></p>
 
-        <label for="fromCurrency" id="fromCurrencyLabel"><b>From Currency:</b></label>
+        <label for="fromCurrency" id="fromCurrencyLabel">
+          <b data-i18n="fromCurrencyLabel">From Currency:</b>
+        </label>
         <select id="fromCurrency" aria-label="From currency"></select>
 
-        <label for="toCurrency"><b>To Currency:</b></label>
+        <label for="toCurrency">
+          <b data-i18n="toCurrencyLabel">To Currency:</b>
+        </label>
         <select id="toCurrency" aria-label="To currency"></select>
 
-        <button id="swapButton" class="btn-ghost" onclick="swapCurrencies()">🔄 Swap Currencies</button>
-        <button id="fetchRateBtn" class="btn-primary" onclick="fetchLiveExchangeRate()">⚡ Fetch Live Exchange Rate</button>
+        <button id="swapButton" class="btn-ghost" onclick="swapCurrencies()"
+                data-i18n="swapBtn">🔄 Swap Currencies</button>
+        <button id="fetchRateBtn" class="btn-primary" onclick="fetchLiveExchangeRate()"
+                data-i18n="fetchBtn">⚡ Fetch Live Exchange Rate</button>
 
         <div class="manual-rate">
-          <h3>Exchange rate currency bought at:</h3>
+          <h3 data-i18n="manualRateTitle">Exchange rate currency bought at:</h3>
           <div class="rate-row">
-            <label id="forwardLabel">From → To:</label>
-            <input type="number" id="manualRateForward" placeholder="Sign in to enter rate"
+            <label id="forwardLabel" data-i18n="forwardLabel">From → To:</label>
+            <input type="number" id="manualRateForward"
+                   data-i18n-placeholder="ratePlaceholder"
+                   placeholder="Sign in to enter rate"
                    inputmode="decimal" step="0.0001" disabled>
           </div>
           <div class="rate-row" id="inverseContainer" style="display:none;">
-            <label id="inverseLabel">To → From:</label>
+            <label id="inverseLabel" data-i18n="inverseLabel">To → From:</label>
             <input type="number" id="manualRateInverse" placeholder="e.g. 0.80"
                    inputmode="decimal" step="0.0001" disabled>
           </div>
-          <button id="saveButton" class="btn-save" onclick="saveSettings()">💾 Save</button>
+          <button id="saveButton" class="btn-save" onclick="saveSettings()"
+                  data-i18n="saveBtn">💾 Save</button>
         </div>
 
         <div class="add-currency-banner">
-          <h3>Need an additional currency?</h3>
-          <p>Add any world currency for a one-time fee of <b>£0.99</b>.</p>
-          <button class="btn-success" onclick="window.location.href='add-currency.html'">➕ Add an Additional Currency</button>
+          <h3 data-i18n="addBannerTitle">Need an additional currency?</h3>
+          <p data-i18n="addBannerText">Add any world currency for a one-time fee of <b>£0.99</b>.</p>
+          <button class="btn-success" onclick="window.location.href='add-currency.html'"
+                  data-i18n="addBannerBtn">➕ Add an Additional Currency</button>
         </div>
 
       </div><!-- /.card -->
     </div><!-- /.main-content -->
 
     <footer class="page-footer">
-      &copy; 2026 S Allan. All rights reserved.
+      <span data-i18n="footer">&copy; 2026 S Allan. All rights reserved.</span>
     </footer>
   </div><!-- /.page-wrapper -->
 
@@ -85,17 +119,19 @@
     };
 
     // ── DOM refs ───────────────────────────────────────────────────
-    const fromSelect       = document.getElementById("fromCurrency");
-    const toSelect         = document.getElementById("toCurrency");
-    const outputBox        = document.getElementById("outputBox");
-    const noteEl           = document.getElementById("note");
+    const fromSelect        = document.getElementById("fromCurrency");
+    const toSelect          = document.getElementById("toCurrency");
+    const outputBox         = document.getElementById("outputBox");
+    const noteEl            = document.getElementById("note");
     const manualRateForward = document.getElementById("manualRateForward");
     const manualRateInverse = document.getElementById("manualRateInverse");
-    const amountInput      = document.getElementById("amount");
-    const forwardLabel     = document.getElementById("forwardLabel");
-    const inverseLabel     = document.getElementById("inverseLabel");
-    const authWarning      = document.getElementById("authWarning");
-    const fetchRateBtn     = document.getElementById("fetchRateBtn");
+    const amountInput       = document.getElementById("amount");
+    const forwardLabel      = document.getElementById("forwardLabel");
+    const inverseLabel      = document.getElementById("inverseLabel");
+    const authWarning       = document.getElementById("authWarning");
+    const fetchRateBtn      = document.getElementById("fetchRateBtn");
+
+    // ── (Auth gate runs in <head> before render — see top of file) ──
 
     // ── Auth ───────────────────────────────────────────────────────
     function isCognitoSignedIn() {
@@ -110,12 +146,12 @@
 
     function applyAuthProtection() {
       const auth = isCognitoSignedIn();
-      amountInput.disabled       = !auth;
-      manualRateForward.disabled = !auth;
-      fetchRateBtn.disabled      = !auth;
-      amountInput.placeholder    = auth ? "e.g. 100"  : "Sign in to enter amount";
-      manualRateForward.placeholder = auth ? "e.g. 1.25" : "Sign in to enter rate";
-      authWarning.style.display  = auth ? "none" : "block";
+      amountInput.disabled          = !auth;
+      manualRateForward.disabled    = !auth;
+      fetchRateBtn.disabled         = !auth;
+      amountInput.placeholder       = auth ? t('amountActivePlaceholder') : t('amountPlaceholder');
+      manualRateForward.placeholder = auth ? t('rateActivePlaceholder')   : t('ratePlaceholder');
+      authWarning.style.display     = auth ? "none" : "block";
     }
 
     // ── Dropdowns ──────────────────────────────────────────────────
@@ -131,9 +167,9 @@
         toSelect.add(new Option(`${code} - ${name}`, code));
       }
 
-      const codes       = Object.keys(all);
-      const savedFrom   = localStorage.getItem("fromCurrency") || "GBP";
-      const savedTo     = localStorage.getItem("toCurrency")   || "EUR";
+      const codes        = Object.keys(all);
+      const savedFrom    = localStorage.getItem("fromCurrency") || "USD";
+      const savedTo      = localStorage.getItem("toCurrency")   || "GBP";
       const resolvedFrom = codes.includes(savedFrom) ? savedFrom : codes[0];
       const resolvedTo   = codes.includes(savedTo) && savedTo !== resolvedFrom
                            ? savedTo
@@ -166,6 +202,9 @@
     }
 
     function updateRateLabels() {
+      forwardLabel.textContent = `${t('forwardLabel').replace('From', fromSelect.value).replace('To', toSelect.value)}`;
+      inverseLabel.textContent = `${t('inverseLabel').replace('To', toSelect.value).replace('From', fromSelect.value)}`;
+      // Simple approach: show currency codes in labels
       forwardLabel.textContent = `From (${fromSelect.value}) → To (${toSelect.value}):`;
       inverseLabel.textContent = `To (${toSelect.value}) → From (${fromSelect.value}):`;
       loadSavedRate();
@@ -179,16 +218,16 @@
       const to   = toSelect.value;
 
       if (!from || !to) {
-        outputBox.textContent = "Please select both currencies.";
+        outputBox.textContent = t('selectBothMsg');
         return;
       }
       if (from === to) {
-        outputBox.textContent = "Please select two different currencies.";
+        outputBox.textContent = t('selectDiffMsg');
         return;
       }
 
-      fetchRateBtn.disabled     = true;
-      fetchRateBtn.textContent  = "Fetching Rate...";
+      fetchRateBtn.disabled    = true;
+      fetchRateBtn.textContent = t('fetchingBtn');
 
       try {
         let rate = null;
@@ -211,18 +250,23 @@
           manualRateForward.value = rate.toFixed(decimals);
           manualRateInverse.value = (1 / rate).toFixed(4);
           convertCurrency();
-          noteEl.textContent = `Live rate fetched: 1 ${from} = ${rate.toFixed(decimals)} ${to}`;
+          noteEl.textContent = t('liveRateFetched')
+            .replace('{from}', from)
+            .replace('{rate}', rate.toFixed(decimals))
+            .replace('{to}', to);
         } else {
           outputBox.textContent = "—";
-          noteEl.textContent    = `Rate not available for ${from} → ${to}. Enter manually.`;
+          noteEl.textContent    = t('rateNotAvail')
+            .replace('{from}', from)
+            .replace('{to}', to);
         }
       } catch (err) {
         console.error("Exchange rate error:", err);
         outputBox.textContent = "—";
-        noteEl.textContent    = "Failed to fetch rate. Please enter manually.";
+        noteEl.textContent    = t('fetchFailed');
       } finally {
         fetchRateBtn.disabled    = false;
-        fetchRateBtn.textContent = "⚡ Fetch Live Exchange Rate";
+        fetchRateBtn.textContent = t('fetchBtn');
       }
     }
 
@@ -235,13 +279,16 @@
       const amount    = parseFloat(amountInput.value);
       const rateForwd = parseFloat(manualRateForward.value);
 
-      if (isNaN(amount) || amount <= 0)            { outputBox.textContent = "—"; noteEl.textContent = ""; return; }
-      if (from === to)                              { outputBox.textContent = "Select two different currencies."; noteEl.textContent = ""; return; }
-      if (isNaN(rateForwd) || rateForwd <= 0)      { outputBox.textContent = "Enter a valid exchange rate."; noteEl.textContent = ""; return; }
+      if (isNaN(amount) || amount <= 0)       { outputBox.textContent = "—"; noteEl.textContent = ""; return; }
+      if (from === to)                         { outputBox.textContent = t('selectDiffMsg2'); noteEl.textContent = ""; return; }
+      if (isNaN(rateForwd) || rateForwd <= 0) { outputBox.textContent = t('invalidRateMsg'); noteEl.textContent = ""; return; }
 
       const result = amount * rateForwd;
       outputBox.textContent = `${result.toFixed(2)} ${to}`;
-      noteEl.textContent    = `Rate: 1 ${from} = ${rateForwd.toFixed(4)} ${to}`;
+      noteEl.textContent    = t('rateSaved')
+        .replace('{from}', from)
+        .replace('{rate}', rateForwd.toFixed(4))
+        .replace('{to}', to);
     }
 
     // ── Save ───────────────────────────────────────────────────────
@@ -310,7 +357,12 @@
     convertCurrency();
   </script>
 
+  <script src="js/translations.js"></script>
   <script src="js/nav.js"></script>
-  <script>initNav('Holiday Currency Converter', 'index.html');</script>
+  <script>
+    initNav('Holiday Currency Converter', 'index.html');
+    // Re-apply auth placeholders after translations load
+    applyAuthProtection();
+  </script>
 </body>
 </html>

@@ -17,34 +17,45 @@
     <div class="main-content">
       <div class="card">
 
-        <div class="title-box">Verify Email</div>
+        <div class="title-box" data-i18n="verifyTitle">Verify Email</div>
 
         <div id="statusMessage" class="status-msg" role="alert"></div>
 
         <form id="verifyForm" onsubmit="handleVerification(event)" novalidate>
-          <label for="email">Email Address</label>
-          <input type="email" id="email" placeholder="name@example.com"
+          <label for="email" data-i18n="emailLabel">Email Address</label>
+          <input type="email" id="email"
+                 data-i18n-placeholder="emailPlaceholder"
+                 placeholder="name@example.com"
                  inputmode="email" autocomplete="email" autocapitalize="off"
                  spellcheck="false" required>
 
-          <label for="code">Verification Code</label>
-          <input type="text" id="code" placeholder="Enter 6-digit code"
+          <label for="code" data-i18n="codeLabel">Verification Code</label>
+          <input type="text" id="code"
+                 data-i18n-placeholder="codePlaceholder"
+                 placeholder="Enter 6-digit code"
                  inputmode="numeric" autocomplete="one-time-code"
                  pattern="[0-9]{6}" maxlength="6" required autofocus>
 
-          <button type="submit" class="btn-primary">Verify Account</button>
-          <button type="button" class="btn-secondary" onclick="resendCode()">Resend Verification Code</button>
+          <button type="submit" class="btn-primary" data-i18n="verifyBtn">Verify Account</button>
+          <button type="button" class="btn-secondary" onclick="resendCode()"
+                  data-i18n="resendBtn">Resend Verification Code</button>
         </form>
 
+        <p class="note" style="margin-top: 14px; font-size: 13px; color: #666; text-align: center;"
+           data-i18n="spamHint">
+          📬 Can't find the code? Check your <strong>spam or junk folder</strong> — it sometimes ends up there.
+        </p>
+
         <div class="link-box">
-          Already verified? <a href="signin.html">Sign In</a>
+          <span data-i18n="alreadyVerified">Already verified?</span>
+          <a href="signin.html" data-i18n="signInLink">Sign In</a>
         </div>
 
       </div><!-- /.card -->
     </div><!-- /.main-content -->
 
     <footer class="page-footer">
-      &copy; 2026 S Allan. All rights reserved.
+      <span data-i18n="footer">&copy; 2026 S Allan. All rights reserved.</span>
     </footer>
   </div><!-- /.page-wrapper -->
 
@@ -59,7 +70,6 @@
       userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
     }
 
-    // Auto-populate email from query string passed by register.html
     window.addEventListener("DOMContentLoaded", () => {
       const emailParam = new URLSearchParams(window.location.search).get("email");
       if (emailParam) {
@@ -70,64 +80,47 @@
 
     function showStatus(message, isError = false) {
       const el = document.getElementById("statusMessage");
-      el.textContent = message;
-      el.className   = "status-msg " + (isError ? "error" : "success");
+      el.textContent   = message;
+      el.className     = "status-msg " + (isError ? "error" : "success");
       el.style.display = "block";
     }
 
     function handleVerification(event) {
       event.preventDefault();
-
-      if (!userPool) {
-        showStatus("Cognito SDK not loaded. Check your internet connection.", true);
-        return;
-      }
+      if (!userPool) { showStatus(t('sdkNotLoaded2'), true); return; }
 
       const email = document.getElementById("email").value.trim();
       const code  = document.getElementById("code").value.trim();
 
       const cognitoUser = new AmazonCognitoIdentity.CognitoUser({
-        Username: email,
-        Pool: userPool
+        Username: email, Pool: userPool
       });
 
-      cognitoUser.confirmRegistration(code, true, (err, result) => {
-        if (err) {
-          showStatus(err.message || JSON.stringify(err), true);
-          return;
-        }
-        showStatus("✅ Email verified! Redirecting to Sign In...");
+      cognitoUser.confirmRegistration(code, true, (err) => {
+        if (err) { showStatus(err.message || JSON.stringify(err), true); return; }
+        showStatus(t('verifiedMsg'));
         setTimeout(() => { window.location.href = "signin.html"; }, 1500);
       });
     }
 
     function resendCode() {
-      if (!userPool) {
-        showStatus("Cognito SDK not loaded.", true);
-        return;
-      }
+      if (!userPool) { showStatus(t('sdkNotLoaded2'), true); return; }
 
       const email = document.getElementById("email").value.trim();
-      if (!email) {
-        showStatus("Please enter your email address first.", true);
-        return;
-      }
+      if (!email) { showStatus(t('enterEmailFirst'), true); return; }
 
       const cognitoUser = new AmazonCognitoIdentity.CognitoUser({
-        Username: email,
-        Pool: userPool
+        Username: email, Pool: userPool
       });
 
       cognitoUser.resendConfirmationCode((err) => {
-        if (err) {
-          showStatus(err.message || JSON.stringify(err), true);
-          return;
-        }
-        showStatus("📩 Verification code resent! Check your inbox.");
+        if (err) { showStatus(err.message || JSON.stringify(err), true); return; }
+        showStatus(t('codeResent'));
       });
     }
   </script>
 
+  <script src="js/translations.js"></script>
   <script src="js/nav.js"></script>
   <script>initNav('Verify Email', 'verify.html');</script>
 </body>
