@@ -224,8 +224,9 @@
         <option value="index.html"        data-i18n-nav="navHome"        selected>🏠 Home</option>
         <option value="add-currency.html" data-i18n-nav="navAddCurrency">➕ Add Currency (£0.99)</option>
         <option value="contact.html"      data-i18n-nav="navContact">✉️ Contact us</option>
-        <option value="privacy.html"      data-i18n-nav="navPrivacy">🔒 Privacy Policy</option>
-        <option value="signout"           data-i18n-nav="navSignOut">🚪 Sign Out</option>
+        <option value="privacy.html"        data-i18n-nav="navPrivacy">🔒 Privacy Policy</option>
+        <option value="delete-account.html" data-i18n-nav="navDeleteAccount">🗑️ Delete Account</option>
+        <option value="signout"             data-i18n-nav="navSignOut">🚪 Sign Out</option>
       </select>
     </div>
 
@@ -359,6 +360,14 @@
     };
 
     function populateSelects() {
+      // One-time default migration: force USD → GBP for installs
+      // that predate the new defaults. Runs once per install.
+      if (!localStorage.getItem("defaultsV2Applied")) {
+        localStorage.setItem("fromCurrency", "USD");
+        localStorage.setItem("toCurrency",   "GBP");
+        localStorage.setItem("defaultsV2Applied", "true");
+      }
+
       fromSelect.innerHTML = "";
       toSelect.innerHTML   = "";
       const saved = JSON.parse(localStorage.getItem("customCurrencies")) || {};

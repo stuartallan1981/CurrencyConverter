@@ -156,6 +156,14 @@
 
     // ── Dropdowns ──────────────────────────────────────────────────
     function populateSelects() {
+      // One-time default migration: force USD → GBP for installs
+      // that predate the new defaults. Runs once per install.
+      if (!localStorage.getItem("defaultsV2Applied")) {
+        localStorage.setItem("fromCurrency", "USD");
+        localStorage.setItem("toCurrency",   "GBP");
+        localStorage.setItem("defaultsV2Applied", "true");
+      }
+
       fromSelect.innerHTML = "";
       toSelect.innerHTML   = "";
 

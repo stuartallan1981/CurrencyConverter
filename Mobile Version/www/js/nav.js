@@ -9,8 +9,9 @@
 const NAV_ITEMS = [
   { labelKey: 'navHome',        icon: '🏠', href: 'index.html'        },
   { labelKey: 'navAddCurrency', icon: '➕', href: 'add-currency.html' },
-  { labelKey: 'navContact',     icon: '✉️', href: 'contact.html'      },
-  { labelKey: 'navPrivacy',     icon: '🔒', href: 'privacy.html'      },
+  { labelKey: 'navContact',       icon: '✉️', href: 'contact.html'        },
+  { labelKey: 'navPrivacy',       icon: '🔒', href: 'privacy.html'        },
+  { labelKey: 'navDeleteAccount', icon: '🗑️', href: 'delete-account.html' },
 ];
 
 const LANG_OPTIONS = [

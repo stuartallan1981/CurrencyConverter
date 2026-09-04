@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Delete Account - Holiday Currency Converter</title>
+  <link rel="stylesheet" href="css/app.css" />
+  <style>
+    .delete-body label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+      font-size: 14px;
+      color: #333;
+      text-align: left;
+    }
+    .delete-body input[type="email"],
+    .delete-body textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+    .delete-submit-btn {
+      background: #e74c3c;
+      color: #fff;
+      border: none;
+      padding: 12px 20px;
+      margin-top: 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: bold;
+      width: 100%;
+    }
+    .delete-submit-btn:active { background: #c0392b; }
+    .delete-submit-btn:disabled { background: #e7a9a2; cursor: default; }
+    .delete-info-box {
+      background: #edf2f7;
+      padding: 15px;
+      border-left: 4px solid #3182ce;
+      border-radius: 6px;
+      margin-top: 20px;
+      font-size: 13px;
+      color: #444;
+      text-align: left;
+    }
+    .delete-info-box ul {
+      padding-left: 18px;
+      margin: 8px 0 0;
+    }
+    .delete-info-box li {
+      line-height: 1.6;
+      margin-bottom: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-wrapper">
+    <!-- Top nav injected by nav.js -->
+
+    <div class="main-content">
+      <div class="card">
+
+        <div class="title-box" data-i18n="deleteTitle">Request Account &amp; Data Deletion</div>
+
+        <div class="delete-body">
+          <p data-i18n="deleteIntro">If you wish to delete your <strong>Holiday Currency Converter</strong> account and remove all associated personal data from our systems, please complete the form below.</p>
+
+          <div id="statusMessage" class="status-msg" role="alert"></div>
+
+          <form id="deleteForm" novalidate>
+            <label for="email" data-i18n="deleteEmailLabel">Account Email Address:</label>
+            <input type="email" id="email" name="email" required
+                   inputmode="email" autocomplete="email" autocapitalize="off"
+                   spellcheck="false"
+                   data-i18n-placeholder="deleteEmailPlaceholder"
+                   placeholder="user@example.com">
+
+            <label for="reason" data-i18n="deleteReasonLabel">Reason for Deletion (Optional):</label>
+            <textarea id="reason" name="reason" rows="3"
+                      data-i18n-placeholder="deleteReasonPlaceholder"
+                      placeholder="Let us know why you are leaving..."
+                      style="resize:vertical;"></textarea>
+
+            <button type="submit" class="delete-submit-btn" data-i18n="deleteSubmitBtn">Submit Deletion Request</button>
+          </form>
+
+          <div class="delete-info-box">
+            <strong data-i18n="deleteInfoTitle">What happens when you request deletion?</strong>
+            <ul>
+              <li data-i18n="deleteInfo1">Your AWS Cognito authentication account will be permanently deactivated.</li>
+              <li data-i18n="deleteInfo2">Your saved preferences, wallet balances, and app data will be deleted within 30 days.</li>
+              <li data-i18n="deleteInfo3">Payment records processed via PayPal are retained only as required by tax and financial laws.</li>
+            </ul>
+          </div>
+        </div>
+
+      </div><!-- /.card -->
+    </div><!-- /.main-content -->
+
+    <footer class="page-footer">
+      <span data-i18n="footer">&copy; 2026 S Allan. All rights reserved.</span>
+    </footer>
+  </div><!-- /.page-wrapper -->
+
+  <script>
+    const API_BASE = 'https://teiit1vla3.execute-api.eu-west-2.amazonaws.com/prod';
+
+    function tr(key, fallback) {
+      return (typeof t === 'function' && t(key)) ? t(key) : fallback;
+    }
+
+    function showStatus(message, isError = false) {
+      const el = document.getElementById("statusMessage");
+      el.textContent   = message;
+      el.className     = "status-msg " + (isError ? "error" : "success");
+      el.style.display = "block";
+      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    document.getElementById("deleteForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const email  = document.getElementById("email").value.trim();
+      const reason = document.getElementById("reason").value.trim();
+
+      if (!email) {
+        showStatus(tr('deleteEmailRequired', 'Please enter your account email address.'), true);
+        return;
+      }
+
+      const submitBtn = e.target.querySelector("button[type=submit]");
+      const submitLabel = tr('deleteSubmitBtn', 'Submit Deletion Request');
+      submitBtn.disabled    = true;
+      submitBtn.textContent = tr('deleteSubmittingBtn', 'Submitting...');
+
+      // Sent through the existing /contact endpoint so the request reliably
+      // reaches the same inbox (mailto: is unreliable inside a WebView).
+      const body = {
+        name:    'ACCOUNT DELETION REQUEST',
+        email:   email,
+        message: `Account deletion request.\nAccount email: ${email}\nReason: ${reason || '(none provided)'}`
+      };
+
+      try {
+        const response = await fetch(`${API_BASE}/contact`, {
+          method:  "POST",
+          headers: { "Content-Type": "application/json" },
+          body:    JSON.stringify(body)
+        });
+
+        if (response.ok) {
+          showStatus(tr('deleteSuccess', '✅ Your deletion request has been submitted. We\'ll process it within 30 days.'));
+          document.getElementById("deleteForm").reset();
+        } else {
+          showStatus(tr('deleteFailed', 'Failed to submit your request. Please try again.'), true);
+        }
+      } catch (err) {
+        showStatus(tr('deleteConnError', 'Error connecting to the service. Check your connection.'), true);
+      } finally {
+        submitBtn.disabled    = false;
+        submitBtn.textContent = submitLabel;
+      }
+    });
+  </script>
+
+  <script src="js/translations.js"></script>
+  <script src="js/nav.js"></script>
+  <script>initNav('Delete Account', 'delete-account.html');</script>
+</body>
+</html>

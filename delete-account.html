@@ -71,6 +71,27 @@
       margin-top: 20px;
       font-size: 0.9rem;
     }
+
+    button:disabled { background: #e7a9a2; cursor: default; }
+
+    .status-msg {
+      display: none;
+      padding: 12px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      margin: 15px 0;
+      line-height: 1.4;
+    }
+    .status-msg.error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .status-msg.success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
   </style>
 </head>
 <body>
@@ -91,14 +112,18 @@
     <h1 data-i18n="deleteTitle">Request Account &amp; Data Deletion</h1>
     <p data-i18n="deleteIntro">If you wish to delete your <strong>Holiday Currency Converter</strong> account and remove all associated personal data from our systems, please complete the form below.</p>
 
-    <form action="mailto:stuartallan1981@gmail.com" method="post" enctype="text/plain">
+    <div id="statusMessage" class="status-msg" role="alert"></div>
+
+    <form id="deleteForm" novalidate>
       <label for="email" data-i18n="deleteEmailLabel">Account Email Address:</label>
-      <input type="email" id="email" name="Email" required
+      <input type="email" id="email" name="email" required
+             inputmode="email" autocomplete="email" autocapitalize="off"
+             spellcheck="false"
              data-i18n-placeholder="deleteEmailPlaceholder"
              placeholder="user@example.com">
 
       <label for="reason" data-i18n="deleteReasonLabel">Reason for Deletion (Optional):</label>
-      <textarea id="reason" name="Reason" rows="3"
+      <textarea id="reason" name="reason" rows="3"
                 data-i18n-placeholder="deleteReasonPlaceholder"
                 placeholder="Let us know why you are leaving..."></textarea>
 
@@ -123,6 +148,65 @@
       document.getElementById('langPicker').value = lang;
       applyTranslations(lang);
     })();
+
+    const API_BASE = 'https://teiit1vla3.execute-api.eu-west-2.amazonaws.com/prod';
+
+    function tr(key, fallback) {
+      return (typeof t === 'function' && t(key)) ? t(key) : fallback;
+    }
+
+    function showStatus(message, isError = false) {
+      const el = document.getElementById("statusMessage");
+      el.textContent   = message;
+      el.className     = "status-msg " + (isError ? "error" : "success");
+      el.style.display = "block";
+      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    document.getElementById("deleteForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const email  = document.getElementById("email").value.trim();
+      const reason = document.getElementById("reason").value.trim();
+
+      if (!email) {
+        showStatus(tr('deleteEmailRequired', 'Please enter your account email address.'), true);
+        return;
+      }
+
+      const submitBtn   = e.target.querySelector("button[type=submit]");
+      const submitLabel = tr('deleteSubmitBtn', 'Submit Deletion Request');
+      submitBtn.disabled    = true;
+      submitBtn.textContent = tr('deleteSubmittingBtn', 'Submitting...');
+
+      // Sent through the existing /contact endpoint so the request reliably
+      // reaches the same inbox (mailto: form submission is unreliable).
+      const body = {
+        name:    'ACCOUNT DELETION REQUEST',
+        email:   email,
+        message: `Account deletion request.\nAccount email: ${email}\nReason: ${reason || '(none provided)'}`
+      };
+
+      try {
+        const response = await fetch(`${API_BASE}/contact`, {
+          method:  "POST",
+          headers: { "Content-Type": "application/json" },
+          body:    JSON.stringify(body)
+        });
+
+        if (response.ok) {
+          showStatus(tr('deleteSuccess', '✅ Your deletion request has been submitted. We\'ll process it within 30 days.'));
+          document.getElementById("deleteForm").reset();
+        } else {
+          showStatus(tr('deleteFailed', 'Failed to submit your request. Please try again.'), true);
+        }
+      } catch (err) {
+        showStatus(tr('deleteConnError', 'Error connecting to the service. Check your connection.'), true);
+      } finally {
+        submitBtn.disabled    = false;
+        submitBtn.textContent = submitLabel;
+      }
+    });
   </script>
 </body>
 </html>

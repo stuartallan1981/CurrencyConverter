@@ -21,6 +21,7 @@ const TRANSLATIONS = {
     navAddCurrency:      '➕ Add Currency (£0.99)',
     navContact:          '✉️ Contact us',
     navPrivacy:          '🔒 Privacy Policy',
+    navDeleteAccount:    '🗑️ Delete Account',
     navSignOut:          '🚪 Sign Out',
     navSignInPage:       '🔑 Sign In / Register',
     navVerifyPage:       '✅ Verify Email',
@@ -155,6 +156,11 @@ const TRANSLATIONS = {
     deleteInfo1:         'Your AWS Cognito authentication account will be permanently deactivated.',
     deleteInfo2:         'Your saved preferences, wallet balances, and app data will be deleted within 30 days.',
     deleteInfo3:         'Payment records processed via PayPal are retained only as required by tax and financial laws.',
+    deleteSubmittingBtn: 'Submitting...',
+    deleteSuccess:       '✅ Your deletion request has been submitted. We\'ll process it within 30 days.',
+    deleteFailed:        'Failed to submit your request. Please try again.',
+    deleteConnError:     'Error connecting to the service. Check your connection.',
+    deleteEmailRequired: 'Please enter your account email address.',
   },
 
   /* ── French ────────────────────────────────────────────────────── */
@@ -165,6 +171,7 @@ const TRANSLATIONS = {
     navAddCurrency:      '➕ Ajouter une devise (0,99 £)',
     navContact:          '✉️ Nous contacter',
     navPrivacy:          '🔒 Politique de confidentialité',
+    navDeleteAccount:    '🗑️ Supprimer le compte',
     navSignOut:          '🚪 Se déconnecter',
     navSignInPage:       '🔑 Connexion / Inscription',
     navVerifyPage:       '✅ Vérifier l\'e-mail',
@@ -233,6 +240,11 @@ const TRANSLATIONS = {
     deleteInfo1:         'Votre compte AWS Cognito sera définitivement désactivé.',
     deleteInfo2:         'Vos préférences, soldes et données d\'application seront supprimés dans les 30 jours.',
     deleteInfo3:         'Les dossiers de paiement traités via PayPal sont conservés conformément aux lois fiscales et financières.',
+    deleteSubmittingBtn: 'Envoi en cours...',
+    deleteSuccess:       '✅ Votre demande de suppression a été envoyée. Nous la traiterons sous 30 jours.',
+    deleteFailed:        'Échec de l\'envoi de votre demande. Veuillez réessayer.',
+    deleteConnError:     'Erreur de connexion au service. Vérifiez votre connexion.',
+    deleteEmailRequired: 'Veuillez saisir l\'adresse e-mail de votre compte.',
   },
 
   /* ── Spanish ───────────────────────────────────────────────────── */
@@ -243,6 +255,7 @@ const TRANSLATIONS = {
     navAddCurrency:      '➕ Añadir divisa (£0,99)',
     navContact:          '✉️ Contáctenos',
     navPrivacy:          '🔒 Política de privacidad',
+    navDeleteAccount:    '🗑️ Eliminar cuenta',
     navSignOut:          '🚪 Cerrar sesión',
     navSignInPage:       '🔑 Iniciar sesión / Registrarse',
     navVerifyPage:       '✅ Verificar correo',
@@ -311,6 +324,11 @@ const TRANSLATIONS = {
     deleteInfo1:         'Su cuenta de autenticación AWS Cognito será desactivada permanentemente.',
     deleteInfo2:         'Sus preferencias guardadas, saldos y datos de la aplicación se eliminarán en 30 días.',
     deleteInfo3:         'Los registros de pago procesados a través de PayPal se conservan según lo exigido por las leyes fiscales y financieras.',
+    deleteSubmittingBtn: 'Enviando...',
+    deleteSuccess:       '✅ Su solicitud de eliminación ha sido enviada. La procesaremos en un plazo de 30 días.',
+    deleteFailed:        'No se pudo enviar su solicitud. Inténtelo de nuevo.',
+    deleteConnError:     'Error al conectar con el servicio. Compruebe su conexión.',
+    deleteEmailRequired: 'Por favor, introduzca el correo electrónico de su cuenta.',
   },
 
   /* ── German ────────────────────────────────────────────────────── */
@@ -321,6 +339,7 @@ const TRANSLATIONS = {
     navAddCurrency:      '➕ Währung hinzufügen (£0,99)',
     navContact:          '✉️ Kontakt',
     navPrivacy:          '🔒 Datenschutzrichtlinie',
+    navDeleteAccount:    '🗑️ Konto löschen',
     navSignOut:          '🚪 Abmelden',
 
     appTitle:            'Urlaubs-Währungsrechner',
@@ -387,6 +406,11 @@ const TRANSLATIONS = {
     deleteInfo1:         'Ihr AWS Cognito-Authentifizierungskonto wird dauerhaft deaktiviert.',
     deleteInfo2:         'Ihre gespeicherten Einstellungen, Wallet-Salden und App-Daten werden innerhalb von 30 Tagen gelöscht.',
     deleteInfo3:         'Zahlungsbelege, die über PayPal verarbeitet wurden, werden nur nach steuer- und finanzrechtlichen Anforderungen aufbewahrt.',
+    deleteSubmittingBtn: 'Wird gesendet...',
+    deleteSuccess:       '✅ Ihre Löschungsanfrage wurde übermittelt. Wir bearbeiten sie innerhalb von 30 Tagen.',
+    deleteFailed:        'Ihre Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut.',
+    deleteConnError:     'Verbindungsfehler zum Dienst. Bitte prüfen Sie Ihre Verbindung.',
+    deleteEmailRequired: 'Bitte geben Sie die E-Mail-Adresse Ihres Kontos ein.',
   },
 
   /* ── Italian ───────────────────────────────────────────────────── */
@@ -397,6 +421,7 @@ const TRANSLATIONS = {
     navAddCurrency:      '➕ Aggiungi valuta (£0,99)',
     navContact:          '✉️ Contattaci',
     navPrivacy:          '🔒 Informativa sulla privacy',
+    navDeleteAccount:    '🗑️ Elimina account',
     navSignOut:          '🚪 Esci',
 
     appTitle:            'Convertitore di Valute per Vacanze',
@@ -463,6 +488,11 @@ const TRANSLATIONS = {
     deleteInfo1:         'Il tuo account di autenticazione AWS Cognito verrà disattivato definitivamente.',
     deleteInfo2:         'Le tue preferenze salvate, i saldi del portafoglio e i dati dell\'app saranno eliminati entro 30 giorni.',
     deleteInfo3:         'I registri di pagamento elaborati tramite PayPal sono conservati solo come richiesto dalle leggi fiscali e finanziarie.',
+    deleteSubmittingBtn: 'Invio in corso...',
+    deleteSuccess:       '✅ La tua richiesta di eliminazione è stata inviata. La elaboreremo entro 30 giorni.',
+    deleteFailed:        'Impossibile inviare la richiesta. Riprova.',
+    deleteConnError:     'Errore di connessione al servizio. Controlla la connessione.',
+    deleteEmailRequired: 'Inserisci l\'indirizzo email del tuo account.',
   }
 };
 
