@@ -203,7 +203,22 @@
     #fetchRateBtn:hover:not(:disabled) { background-color: #0056b3; }
 
     .gallery-footer { margin-top: 20px; text-align: center; font-size: 0.9em; color: #555; }
+
+    /* ── Currency flag beside each dropdown ── */
+    .currency-row { display: flex; align-items: center; gap: 10px; }
+    .currency-row select { flex: 1; margin: 8px 0; }
+    .currency-flag {
+      width: 42px;
+      height: 28px;
+      flex-shrink: 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      object-fit: cover;
+      background: #fff;
+    }
   </style>
+  <!-- Washed-out banknotes card background (shared across pages) -->
+  <link rel="stylesheet" href="css/card-bg.css">
 </head>
 <body>
 
@@ -248,12 +263,18 @@
     <label for="fromCurrency" id="fromCurrencyLabel">
       <b data-i18n="fromCurrencyLabel">From Currency:</b>
     </label>
-    <select id="fromCurrency"></select>
+    <div class="currency-row">
+      <img id="fromFlag" class="currency-flag" src="flags/generic.svg" alt="From currency flag">
+      <select id="fromCurrency"></select>
+    </div>
 
     <label for="toCurrency">
       <b data-i18n="toCurrencyLabel">To Currency:</b>
     </label>
-    <select id="toCurrency"></select>
+    <div class="currency-row">
+      <img id="toFlag" class="currency-flag" src="flags/generic.svg" alt="To currency flag">
+      <select id="toCurrency"></select>
+    </div>
 
     <button id="swapButton" onclick="swapCurrencies()" data-i18n="swapBtn">🔄 Swap Currencies</button>
     <button id="fetchRateBtn" onclick="fetchLiveExchangeRate()" data-i18n="fetchBtn">⚡ Fetch Live Exchange Rate</button>
@@ -291,6 +312,8 @@
 
   <!-- Load translations first so t() is available to page JS -->
   <script src="js/translations.js"></script>
+  <!-- Currency → flag mapping (offline) -->
+  <script src="js/currency-flags.js"></script>
 
   <script>
     // ── Apply saved language on load ──────────────────────────────
@@ -359,6 +382,15 @@
       CNY: "Chinese Yuan", JPY: "Japanese Yen", NZD: "New Zealand Dollar"
     };
 
+    // ── Currency flags (map + flagSrcFor from js/currency-flags.js) ─
+    const fromFlag = document.getElementById("fromFlag");
+    const toFlag   = document.getElementById("toFlag");
+
+    function updateFlags() {
+      fromFlag.src = flagSrcFor(fromSelect.value);
+      toFlag.src   = flagSrcFor(toSelect.value);
+    }
+
     function populateSelects() {
       // One-time default migration: force USD → GBP for installs
       // that predate the new defaults. Runs once per install.
@@ -407,6 +439,7 @@
     function updateRateLabels() {
       forwardLabel.textContent = `From (${fromSelect.value}) → To (${toSelect.value}):`;
       inverseLabel.textContent = `To (${toSelect.value}) → From (${fromSelect.value}):`;
+      updateFlags();
       loadSavedRate();
     }
 

@@ -31,8 +31,10 @@
   </script>
 
   <link rel="stylesheet" href="css/app.css" />
+  <!-- Currency → flag mapping (offline); load before inline page script runs -->
+  <script src="js/currency-flags.js"></script>
 </head>
-<body>
+<body class="page-index">
 
   <div class="page-wrapper">
     <!-- Top nav injected by nav.js -->
@@ -60,12 +62,18 @@
         <label for="fromCurrency" id="fromCurrencyLabel">
           <b data-i18n="fromCurrencyLabel">From Currency:</b>
         </label>
-        <select id="fromCurrency" aria-label="From currency"></select>
+        <div class="currency-row">
+          <img id="fromFlag" class="currency-flag" src="flags/generic.svg" alt="From currency flag">
+          <select id="fromCurrency" aria-label="From currency"></select>
+        </div>
 
         <label for="toCurrency">
           <b data-i18n="toCurrencyLabel">To Currency:</b>
         </label>
-        <select id="toCurrency" aria-label="To currency"></select>
+        <div class="currency-row">
+          <img id="toFlag" class="currency-flag" src="flags/generic.svg" alt="To currency flag">
+          <select id="toCurrency" aria-label="To currency"></select>
+        </div>
 
         <button id="swapButton" class="btn-ghost" onclick="swapCurrencies()"
                 data-i18n="swapBtn">🔄 Swap Currencies</button>
@@ -121,6 +129,8 @@
     // ── DOM refs ───────────────────────────────────────────────────
     const fromSelect        = document.getElementById("fromCurrency");
     const toSelect          = document.getElementById("toCurrency");
+    const fromFlag          = document.getElementById("fromFlag");
+    const toFlag            = document.getElementById("toFlag");
     const outputBox         = document.getElementById("outputBox");
     const noteEl            = document.getElementById("note");
     const manualRateForward = document.getElementById("manualRateForward");
@@ -197,6 +207,12 @@
       return `${fromSelect.value}_${toSelect.value}`;
     }
 
+    function updateFlags() {
+      // flagSrcFor comes from js/currency-flags.js (loaded in <head>)
+      fromFlag.src = flagSrcFor(fromSelect.value);
+      toFlag.src   = flagSrcFor(toSelect.value);
+    }
+
     function loadSavedRate() {
       const rates = JSON.parse(localStorage.getItem("savedRates")) || {};
       const key   = currencyKey();
@@ -215,6 +231,7 @@
       // Simple approach: show currency codes in labels
       forwardLabel.textContent = `From (${fromSelect.value}) → To (${toSelect.value}):`;
       inverseLabel.textContent = `To (${toSelect.value}) → From (${fromSelect.value}):`;
+      updateFlags();
       loadSavedRate();
     }
 

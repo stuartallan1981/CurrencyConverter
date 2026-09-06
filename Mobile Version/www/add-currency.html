@@ -7,6 +7,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Add Currency - Holiday Currency Converter</title>
   <link rel="stylesheet" href="css/app.css" />
+  <!-- Currency → flag mapping (offline); load before inline page script runs -->
+  <script src="js/currency-flags.js"></script>
 
   <!--
   ============================================================
@@ -38,9 +40,12 @@
 
           <div class="section-title" data-i18n="step1">1. Currency Details</div>
           <label for="currencySelect" data-i18n="selectCurrencyLabel">Select World Currency</label>
-          <select id="currencySelect" required aria-label="Select world currency">
-            <option value="" disabled selected data-i18n="selectCurrencyDefault">-- Select a Country / Currency --</option>
-          </select>
+          <div class="currency-row">
+            <img id="currencyFlag" class="currency-flag" src="flags/generic.svg" alt="Selected currency flag">
+            <select id="currencySelect" required aria-label="Select world currency">
+              <option value="" disabled selected data-i18n="selectCurrencyDefault">-- Select a Country / Currency --</option>
+            </select>
+          </div>
 
           <p style="font-size:13px; color:#666; margin-top:8px; text-align:left;">
             <span data-i18n="contactHint">If the currency you require is not listed, or you need a cryptocurrency, please</span>
@@ -257,6 +262,16 @@
         JSON.stringify(item)
       ));
     });
+
+    // ── Flag beside the dropdown (updates with selection) ──────────
+    const currencyFlag = document.getElementById("currencyFlag");
+    function updateCurrencyFlag() {
+      let code = "";
+      try { code = JSON.parse(currencySelect.value || "{}").code || ""; } catch (e) { code = ""; }
+      currencyFlag.src = code ? flagSrcFor(code) : "flags/generic.svg";
+    }
+    currencySelect.addEventListener("change", updateCurrencyFlag);
+    updateCurrencyFlag();
 
     if (window.paypal) {
       paypal.Buttons({

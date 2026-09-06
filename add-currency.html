@@ -134,7 +134,22 @@
     }
 
     #paypal-button-container { margin-top: 12px; }
+
+    /* ── Currency flag beside the dropdown ── */
+    .currency-row { display: flex; align-items: center; gap: 10px; }
+    .currency-row select { flex: 1; margin: 8px 0; }
+    .currency-flag {
+      width: 42px;
+      height: 28px;
+      flex-shrink: 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      object-fit: cover;
+      background: #fff;
+    }
   </style>
+  <!-- Washed-out banknotes card background (shared across pages) -->
+  <link rel="stylesheet" href="css/card-bg.css">
 </head>
 <body>
 
@@ -167,9 +182,12 @@
     <form id="paymentForm" onsubmit="event.preventDefault();">
       <div class="section-title" data-i18n="step1">1. Currency Details</div>
       <label for="currencySelect" data-i18n="selectCurrencyLabel">Select World Currency</label>
-      <select id="currencySelect" required>
-        <option value="" disabled selected data-i18n="selectCurrencyDefault">-- Select a Country/Currency --</option>
-      </select>
+      <div class="currency-row">
+        <img id="currencyFlag" class="currency-flag" src="flags/generic.svg" alt="Selected currency flag">
+        <select id="currencySelect" required>
+          <option value="" disabled selected data-i18n="selectCurrencyDefault">-- Select a Country/Currency --</option>
+        </select>
+      </div>
 
       <p id="notListedHint" data-i18n="notListedHint"
          style="font-size:13px; color:#555; text-align:left; margin-top:6px;">
@@ -212,6 +230,8 @@
   </div>
 
   <script src="js/translations.js"></script>
+  <!-- Currency → flag mapping (offline) -->
+  <script src="js/currency-flags.js"></script>
 
   <script>
     // ── Apply saved language on load ──────────────────────────────
@@ -410,6 +430,16 @@
       const opt = new Option(`${item.country} - ${item.name} (${item.code})`, JSON.stringify(item));
       currencySelect.add(opt);
     });
+
+    // ── Flag beside the dropdown (updates with selection) ──────────
+    const currencyFlag = document.getElementById("currencyFlag");
+    function updateCurrencyFlag() {
+      let code = "";
+      try { code = JSON.parse(currencySelect.value || "{}").code || ""; } catch (e) { code = ""; }
+      currencyFlag.src = code ? flagSrcFor(code) : "flags/generic.svg";
+    }
+    currencySelect.addEventListener("change", updateCurrencyFlag);
+    updateCurrencyFlag();
 
     if (window.paypal) {
       paypal.Buttons({

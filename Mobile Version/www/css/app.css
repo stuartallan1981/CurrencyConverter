@@ -565,3 +565,35 @@ button:active {
   border-color: #007bff;
   box-shadow: 0 0 0 3px rgba(0,123,255,0.15);
 }
+
+/* ── Currency flag beside each dropdown ── */
+.currency-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.currency-row select {
+  flex: 1;
+}
+
+.currency-flag {
+  width: 42px;
+  height: 28px;
+  flex-shrink: 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  object-fit: cover;
+  background: #fff;
+}
+
+/* ── Washed-out banknotes background inside the card (all pages) ── */
+.card {
+  background-color: #fff;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.70), rgba(255, 255, 255, 0.70)),
+    url("../images/banknotes-bg.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}

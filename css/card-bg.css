@@ -1,0 +1,18 @@
+/* ------------------------------------------------------------------
+   card-bg.css
+   Washed-out banknotes photo behind the main content card on every
+   page. A white wash keeps text readable. Falls back to solid white
+   if the image is missing.
+   Linked from every web page after its own inline <style> so it wins.
+------------------------------------------------------------------ */
+.converter,
+.container,
+.card {
+  background-color: #fff;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.70), rgba(255, 255, 255, 0.70)),
+    url("../images/banknotes-bg.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
