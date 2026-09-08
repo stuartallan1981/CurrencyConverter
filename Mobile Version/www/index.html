@@ -209,8 +209,13 @@
 
     function updateFlags() {
       // flagSrcFor comes from js/currency-flags.js (loaded in <head>)
-      fromFlag.src = flagSrcFor(fromSelect.value);
-      toFlag.src   = flagSrcFor(toSelect.value);
+      // Guard against the flag helper not being ready yet (script load
+      // order / caching). Without this, a thrown ReferenceError during
+      // init would leave the flags on the generic placeholder until the
+      // user changed a currency or swapped.
+      if (typeof flagSrcFor !== "function") return;
+      if (fromSelect.value) fromFlag.src = flagSrcFor(fromSelect.value);
+      if (toSelect.value)   toFlag.src   = flagSrcFor(toSelect.value);
     }
 
     function loadSavedRate() {
@@ -226,9 +231,6 @@
     }
 
     function updateRateLabels() {
-      forwardLabel.textContent = `${t('forwardLabel').replace('From', fromSelect.value).replace('To', toSelect.value)}`;
-      inverseLabel.textContent = `${t('inverseLabel').replace('To', toSelect.value).replace('From', fromSelect.value)}`;
-      // Simple approach: show currency codes in labels
       forwardLabel.textContent = `From (${fromSelect.value}) → To (${toSelect.value}):`;
       inverseLabel.textContent = `To (${toSelect.value}) → From (${fromSelect.value}):`;
       updateFlags();
@@ -380,6 +382,13 @@
     populateSelects();
     applyAuthProtection();
     convertCurrency();
+    updateFlags(); // explicit paint of both flags on first load
+
+    // Safety net: if the flag helper or SVGs weren't ready during the
+    // synchronous init, refresh once everything (scripts + images) has
+    // finished loading so the correct flags always show without needing
+    // the user to change or swap a currency.
+    window.addEventListener("load", updateFlags);
   </script>
 
   <script src="js/translations.js"></script>
