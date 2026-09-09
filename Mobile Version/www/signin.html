@@ -217,7 +217,23 @@
           showStatus(t('signedInMsg'));
           setTimeout(() => { window.location.href = 'index.html'; }, 1200);
         },
-        onFailure(err) { showStatus(err.message || JSON.stringify(err), true); }
+        onFailure(err) {
+          // If the account exists but hasn't been verified yet, send the
+          // user to the verification page (email prefilled) so they can
+          // enter their code or request a fresh one — instead of being
+          // stuck with a dead-end "account not confirmed" error.
+          if (err && err.code === 'UserNotConfirmedException') {
+            showStatus(t('notConfirmedMsg'));
+            // Proactively request a fresh code so one is waiting for them.
+            const unconfirmedUser = new AmazonCognitoIdentity.CognitoUser({ Username: email, Pool: userPool });
+            unconfirmedUser.resendConfirmationCode(() => {});
+            setTimeout(() => {
+              window.location.href = 'verify.html?email=' + encodeURIComponent(email);
+            }, 1800);
+            return;
+          }
+          showStatus(err.message || JSON.stringify(err), true);
+        }
       });
     }
 

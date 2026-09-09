@@ -110,6 +110,36 @@ All user preferences are stored client-side:
 3. **Sign in** — Cognito tokens stored in localStorage; converter UI becomes active
 4. **Sign out / session expiry** — tokens removed; converter inputs are disabled with a prompt to sign in
 
+> **Unverified sign-in:** If a user tries to sign in before verifying their email, Cognito returns `UserNotConfirmedException`. The app catches this in `signin.html`, shows a friendly message, automatically requests a fresh verification code, and redirects to `verify.html` (email prefilled) so they can enter the code or resend it — rather than hitting a dead end.
+
+---
+
+## Speeding Up Verification Emails (Cognito → Amazon SES)
+
+By default the Cognito user pool sends verification emails with its built-in sender (`no-reply@verificationemail.com`). Per AWS, this default sender is low-volume and its daily limit is below typical production needs, which causes slow delivery and spam-foldering. Switching the pool to send via **Amazon SES** gives fast, reliable delivery and higher limits.
+
+**Region note:** The pool is in **Europe (London) / `eu-west-2`**, which AWS classifies as *"Backwards compatible."* The SES verified identity can live in **Europe (London), US East (N. Virginia), US West (Oregon), or Europe (Ireland)**. For best performance, verify it in **London** (same region as the pool).
+
+### Setup steps
+
+1. **Verify a sender in Amazon SES** — In the SES console (region `eu-west-2`), verify either an email address (e.g. `no-reply@yourdomain.com`) or, preferably, a whole **domain**. Domain verification enables **DKIM** and lets you send from any address on the domain — the biggest factor in fast delivery and staying out of spam.
+2. **Leave the SES sandbox** — New SES accounts start in a per-region sandbox that only sends to pre-verified addresses. Request **production access** from the SES console (Account dashboard → request production access). Until you do this, Cognito can't email real users. (Skip only if staying on the Cognito default sender.)
+3. **Permissions (automatic via console)** — When you choose SES sending in the Cognito console, Cognito creates the required **service-linked IAM role** for you. The signed-in user needs the `iam:CreateServiceLinkedRole` permission for this to succeed — no manual policy editing required.
+4. **Point the user pool at SES** — Cognito console → **User Pools** → select the pool (`eu-west-2_BY54tpvV0`) → **Authentication methods** → **Email configuration** → **Edit**:
+   - Select **Send email from Amazon SES**
+   - **SES Region:** the region holding the verified identity (London)
+   - **FROM email address:** the verified SES address
+   - *(Optional)* **FROM sender name** (e.g. `Holiday Currency Converter <no-reply@yourdomain.com>`) and a **REPLY-TO** address
+   - **Save changes**
+
+### Notes
+
+- **No code changes needed** — the existing `verify.html` / `signin.html` flow (6-digit code, resend, unverified-redirect) keeps working; emails just arrive faster.
+- SES charges per email (very cheap); the Cognito default sender is free but throttled.
+- Cognito and SES **cannot** be integrated across different AWS accounts — both must be in the same account.
+
+*Source: [AWS — Email settings for Amazon Cognito user pools](https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-email.html). Content rephrased for licensing compliance.*
+
 ---
 
 ## Add Currency Flow

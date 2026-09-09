@@ -96,6 +96,7 @@ const TRANSLATIONS = {
     createAccountBtn:    'Create Account',
     signedInMsg:         '✅ Signed in successfully! Redirecting to Home page...',
     accountCreatedMsg:   '✅ Registration successful! Redirecting to verification...',
+    notConfirmedMsg:     '📧 Your account isn\'t verified yet. Redirecting you to enter your verification code...',
     sdkNotLoadedMsg:     'Cognito SDK not loaded. Check your internet connection.',
     showPasswordLabel:   'Show password',
     hidePasswordLabel:   'Hide password',
