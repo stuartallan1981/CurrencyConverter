@@ -19,11 +19,11 @@
   ============================================================
   -->
 
-  <!-- CURRENTLY ACTIVE: SANDBOX -->
-  <script src="https://www.paypal.com/sdk/js?client-id=ARuBBEN3SyS0KbYgJ20v_KjOq-3tZ3MFbKSzKthU9NkrxKVg7nDXK-9bAOw3lDZz-L2n6-EceMBF3hsP&components=buttons&disable-funding=venmo&currency=GBP"></script>
-
-  <!-- TO USE LIVE: replace the script tag above with this one:
+  <!-- CURRENTLY ACTIVE: LIVE -->
   <script src="https://www.paypal.com/sdk/js?client-id=BAAt1RrdHmQ7kq8Wy8WE2vPAFflxILYLGcqAeHsS4bLE9GlGry3pl0eoQQCvDQ-nN195WAi14jXLaLaLso&components=buttons&disable-funding=venmo&currency=GBP"></script>
+
+  <!-- TO USE SANDBOX (testing — no real money): replace the script tag above with this one:
+  <script src="https://www.paypal.com/sdk/js?client-id=ARuBBEN3SyS0KbYgJ20v_KjOq-3tZ3MFbKSzKthU9NkrxKVg7nDXK-9bAOw3lDZz-L2n6-EceMBF3hsP&components=buttons&disable-funding=venmo&currency=GBP"></script>
   -->
 
   <style>
@@ -196,8 +196,10 @@
 
       <div class="section-title" data-i18n="step2">2. Payment via PayPal</div>
 
+      <!-- LIVE mode: sandbox testing banner hidden. Remove display:none to show it again in sandbox. -->
       <div id="sandboxWarning"
-           style="background:#fff3cd; border:1px solid #ffc107; border-radius:8px;
+           style="display:none;
+                  background:#fff3cd; border:1px solid #ffc107; border-radius:8px;
                   padding:12px 14px; margin-bottom:12px; font-size:13px; color:#856404;
                   line-height:1.5;"
            data-i18n="sandboxWarning">

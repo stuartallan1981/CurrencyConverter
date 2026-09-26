@@ -2,7 +2,7 @@
 
 A currency conversion app built for travellers, available as both a web app and a native Android app. Users can enter the exchange rate they actually bought currency at, fetch live market rates, and purchase additional world currencies as an in-app add-on.
 
-> **Status:** Published to the Google Play Store in **closed testing**. PayPal payments are currently running in **sandbox mode** (no real money) for testing.
+> **Status:** Published to the Google Play Store in **closed testing**. PayPal payments are running in **live mode** (real payments).
 
 ---
 
@@ -30,7 +30,7 @@ A currency conversion app built for travellers, available as both a web app and 
 | Backend API | AWS API Gateway + Lambda |
 | Database | AWS DynamoDB (purchase records) |
 | Exchange rates | [open.er-api.com](https://open.er-api.com) (free public API) |
-| Payments | PayPal JS SDK (Smart Buttons — sandbox mode) |
+| Payments | PayPal JS SDK (Smart Buttons — live mode) |
 | Region | `eu-west-2` (London) |
 
 ---
@@ -86,7 +86,7 @@ User (Browser / Android WebView)
         │               └── POST /purchases → Lambda → DynamoDB
         │
         └── Payments
-              └── PayPal JS SDK (sandbox, GBP £0.99)
+              └── PayPal JS SDK (live, GBP £0.99)
 ```
 
 ### Local state (localStorage)
@@ -145,11 +145,11 @@ By default the Cognito user pool sends verification emails with its built-in sen
 ## Add Currency Flow
 
 1. User selects a currency from the ~150-currency dropdown on `add-currency.html`
-2. PayPal Smart Buttons process a £0.99 GBP payment (currently in **sandbox mode** — use a PayPal sandbox buyer account to test)
+2. PayPal Smart Buttons process a £0.99 GBP payment (currently in **live mode** — real payments are taken)
 3. On approval, a `POST /purchases` request is sent to API Gateway with the Cognito user ID, currency code, name, and country
 4. The currency is saved to `localStorage["customCurrencies"]` and the user is redirected to `index.html`
 
-> **Switching sandbox ↔ live:** The PayPal SDK `client-id` is set in the `<head>` of each `add-currency.html`. Comments in the file list both the sandbox and live client IDs. The Hosted Button block is disabled while in sandbox (hosted buttons do not work in sandbox) and should be re-enabled when going live.
+> **Currently LIVE.** The PayPal SDK `client-id` is set in the `<head>` of each `add-currency.html`, currently the **live** client ID. Comments in the file list both the sandbox and live client IDs, so you can switch back to sandbox for testing by swapping the active `<script>` tag. The Smart Buttons flow (with `createOrder`/`onApprove` → purchase recording) is the active payment path. The Hosted Button block remains commented out to avoid rendering a second button that bypasses purchase recording. The sandbox "Testing mode" banner is hidden (`display:none`) in live mode.
 
 ---
 
@@ -208,7 +208,7 @@ The Android app bundles the web assets via Capacitor, so any change to the HTML/
 - The mobile CSS includes `env(safe-area-inset-*)` support for notched devices
 - `Holiday-Currency-Converter.html` is a legacy prototype with no auth or AWS integration — it is not part of the production app
 - Custom currencies are stored locally only; purchased currencies cannot currently be restored from the server after a reinstall or on a new device
-- PayPal is currently in **sandbox mode** — set up a sandbox buyer account at [developer.paypal.com](https://developer.paypal.com) (Sandbox → Accounts) to test the payment flow
+- PayPal is currently in **live mode** — real payments are taken. To test without charging, temporarily switch the active SDK `<script>` tag in `add-currency.html` back to the sandbox `client-id` (and re-show the `#sandboxWarning` banner) using the commented alternatives in the file
 
 ---
 
