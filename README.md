@@ -168,7 +168,7 @@ Any of ~150 additional world currencies can be added for £0.99 each.
 ## Android App
 
 - **App ID:** `com.sallan.holidaycurrencyconverter`
-- **Version:** 1.0.3 (versionCode 3)
+- **Version:** 2.0.1 (versionCode 16)
 - **Min SDK:** see `build.gradle`
 - **Permissions:** `INTERNET` only
 - **Splash screen:** 2 seconds, blue (`#007bff`), fullscreen immersive
