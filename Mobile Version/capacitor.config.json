@@ -18,8 +18,7 @@
       "splashImmersive": true
     },
     "StatusBar": {
-      "style": "light",
-      "backgroundColor": "#007bff"
+      "style": "light"
     }
   }
 }

@@ -23,12 +23,28 @@ html, body {
   overflow-x: hidden;
 }
 
-/* Safe-area insets for notched phones (iPhone X+, Android cutouts) */
+/* Safe-area insets for notched phones (iPhone X+, Android cutouts).
+   On Android 15 (edge-to-edge), MainActivity injects the real system-bar
+   inset sizes as --android-inset-* variables. We prefer those when present
+   and fall back to env(safe-area-inset-*) (iOS, and Android where env is
+   populated). Each --safe-* var below is the single source of truth used
+   throughout this stylesheet. */
+:root {
+  --safe-top:    var(--android-inset-top,    env(safe-area-inset-top));
+  --safe-bottom: var(--android-inset-bottom, env(safe-area-inset-bottom));
+  --safe-left:   var(--android-inset-left,   env(safe-area-inset-left));
+  --safe-right:  var(--android-inset-right,  env(safe-area-inset-right));
+}
+
 body {
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
+  /* Top inset is intentionally NOT applied here: the sticky blue .top-nav
+     header owns the top safe-area (see below), so the header fills the area
+     behind the transparent status bar for a seamless edge-to-edge look on
+     Android 15. Body still handles the side and bottom insets (cutouts +
+     gesture navigation bar). */
+  padding-bottom: var(--safe-bottom);
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
 }
 
 /* ---------- Page layout ---------- */
@@ -47,7 +63,7 @@ body {
   background: #007bff;
   color: #fff;
   padding: 12px 16px;
-  padding-top: calc(12px + env(safe-area-inset-top));
+  padding-top: calc(12px + var(--safe-top));
   position: sticky;
   top: 0;
   z-index: 100;
@@ -103,7 +119,7 @@ body {
   transition: right 0.28s ease;
   display: flex;
   flex-direction: column;
-  padding-top: env(safe-area-inset-top);
+  padding-top: var(--safe-top);
 }
 
 .nav-drawer.open {
@@ -178,7 +194,7 @@ body {
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   padding: 20px 16px;
-  padding-bottom: calc(20px + env(safe-area-inset-bottom));
+  padding-bottom: calc(20px + var(--safe-bottom));
   max-width: 100%;
 }
 
@@ -478,7 +494,7 @@ button:active {
   font-size: 12px;
   color: #999;
   padding: 18px 16px;
-  padding-bottom: calc(18px + env(safe-area-inset-bottom));
+  padding-bottom: calc(18px + var(--safe-bottom));
   border-top: 1px solid #eaeaea;
   background: #fff;
 }
