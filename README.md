@@ -48,7 +48,7 @@ Currency Converter/
 └── Mobile Version/                     # Android (Capacitor) app
     ├── android/
     │   └── app/
-    │       ├── build.gradle            # App config — version 2.0.3 (versionCode 18)
+    │       ├── build.gradle            # App config — version 2.0.4 (versionCode 19)
     │       ├── debug/                  # Debug APK / AAB builds
     │       ├── release/                # Release AAB build
     │       └── src/main/
@@ -168,7 +168,7 @@ Any of ~150 additional world currencies can be added for £0.99 each.
 ## Android App
 
 - **App ID:** `com.sallan.holidaycurrencyconverter`
-- **Version:** 2.0.3 (versionCode 18)
+- **Version:** 2.0.4 (versionCode 19)
 - **Min SDK:** 24 (Android 7.0) — set in `variables.gradle`
 - **Target/Compile SDK:** 36
 - **Capacitor:** 6.2.0
