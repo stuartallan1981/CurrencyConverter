@@ -48,7 +48,7 @@ Currency Converter/
 └── Mobile Version/                     # Android (Capacitor) app
     ├── android/
     │   └── app/
-    │       ├── build.gradle            # App config — version 1.0.3
+    │       ├── build.gradle            # App config — version 2.0.3 (versionCode 18)
     │       ├── debug/                  # Debug APK / AAB builds
     │       ├── release/                # Release AAB build
     │       └── src/main/
@@ -168,11 +168,47 @@ Any of ~150 additional world currencies can be added for £0.99 each.
 ## Android App
 
 - **App ID:** `com.sallan.holidaycurrencyconverter`
-- **Version:** 2.0.1 (versionCode 16)
-- **Min SDK:** see `build.gradle`
+- **Version:** 2.0.3 (versionCode 18)
+- **Min SDK:** 24 (Android 7.0) — set in `variables.gradle`
+- **Target/Compile SDK:** 36
+- **Capacitor:** 6.2.0
 - **Permissions:** `INTERNET` only
 - **Splash screen:** 2 seconds, blue (`#007bff`), fullscreen immersive
+- **Edge-to-edge (Android 15):** handled in `MainActivity.java` — see the Android 15 & R8 section below
 - The app bundles the web assets via Capacitor — no separate API server is needed
+
+---
+
+## Android 15 Edge-to-Edge & R8 Optimisation
+
+These changes address Play Console recommendations that apply because the app targets SDK 36 (≥35) and runs on **Capacitor 6** (which, unlike Capacitor 7, does not auto-handle Android 15 edge-to-edge).
+
+### Edge-to-edge insets
+
+On Android 15, apps targeting SDK ≥35 draw edge-to-edge by default, so content can sit behind the status bar and gesture navigation bar unless insets are handled.
+
+- **`MainActivity.java`** calls `EdgeToEdge.enable(this)` (the official `androidx.activity` API named in the Play guidance), then listens for window insets and injects them into the WebView as CSS custom properties (`--android-inset-top/bottom/left/right`).
+- **`css/app.css`** defines `--safe-*` variables that prefer the injected `--android-inset-*` values and fall back to `env(safe-area-inset-*)` (iOS + older Android). All layout padding (body, header, nav drawer, content, footer) routes through these.
+- The sticky blue `.top-nav` header owns the **top** inset so it fills the area behind the transparent status bar for a seamless look; the body handles the side and bottom insets.
+- Requires the `androidx.activity:activity` dependency (declared in `app/build.gradle`).
+
+### Status bar (deprecated API removal)
+
+- The **`@capacitor/status-bar` plugin was removed** (it was unused in JS and its compiled `setStatusBarColor()`/`getStatusBarColor()` calls are deprecated in Android 15, which Play flags even via bundled library bytecode).
+- Light status-bar/nav icons are now set natively in `MainActivity.java` via the non-deprecated `WindowInsetsControllerCompat.setAppearanceLightStatusBars(false)`.
+- After removing the plugin you **must** run `npm install` then `npx cap sync android` so it is unregistered from the native project.
+
+### R8 optimisation & resource shrinking
+
+Configured in `app/build.gradle` (release build) and `gradle.properties`:
+
+- `minifyEnabled true` — enables R8 code shrinking/optimisation.
+- `shrinkResources true` — removes unused resources.
+- `proguard-android-optimize.txt` — the optimising default rules file.
+- `android.r8.optimizedResourceShrinking=true` (in `gradle.properties`) — the optimised resource-shrinking pipeline that traces references across the code/resource boundary. (AGP is 9.4.1, above the ≥9.0 requirement.)
+- **`proguard-rules.pro`** keeps Capacitor/WebView classes that are used via reflection (bridge, `@CapacitorPlugin` classes, `@PluginMethod` methods, `@JavascriptInterface` members), so the release build doesn't strip plugin functionality.
+
+> **Testing note:** R8 and optimised resource shrinking only affect the **release** build. Always install and smoke-test a signed release build on a device before uploading — check that all flag SVGs, the banknote background, and splash/launcher icons still load. If a resource is over-shrunk, add a `tools:keep` entry or a `@raw/keep` rule.
 
 ---
 
@@ -191,21 +227,26 @@ Any of ~150 additional world currencies can be added for £0.99 each.
 
 The Android app bundles the web assets via Capacitor, so any change to the HTML/CSS/JS must be synced into the Android project before building.
 
-1. **Sync web assets** — from the `Mobile Version/` directory:
+1. **Install dependencies** — from the `Mobile Version/` directory, if plugins were added/removed (e.g. the StatusBar plugin removal):
+   ```
+   npm install
+   ```
+2. **Sync web assets** — from the `Mobile Version/` directory:
    ```
    npx cap sync android
    ```
-   This copies `www/` into `android/app/src/main/assets/public/` and updates native plugins.
-2. **Bump the version** — in `Mobile Version/android/app/build.gradle`, increase `versionCode` and `versionName` (Google Play requires a higher `versionCode` for every upload).
-3. **Build a signed release AAB** — in Android Studio: Build → Generate Signed Bundle / APK → Android App Bundle, using your existing keystore.
-4. **Upload to Play Console** — under Testing → Closed testing, create a new release and upload the `.aab`.
+   This copies `www/` into `android/app/src/main/assets/public/` and updates/unregisters native plugins.
+3. **Bump the version** — in `Mobile Version/android/app/build.gradle`, increase `versionCode` and `versionName` (Google Play requires a higher `versionCode` for every upload).
+4. **Build a signed release AAB** — in Android Studio: Build → Generate Signed Bundle / APK → Android App Bundle, using your existing keystore.
+5. **Smoke-test the release build on a device** — because R8 and optimised resource shrinking only affect the release build, install the signed AAB/APK and verify sign-in, verification, live rate fetch, PayPal add-currency, contact form, flag SVGs, and splash/launcher icons all work before uploading.
+6. **Upload to Play Console** — under Testing → Closed testing, create a new release and upload the `.aab`.
 
 ---
 
 ## Development Notes
 
 - All page styles in the web version are inline; the mobile version uses the shared `css/app.css` and `js/nav.js` for consistency
-- The mobile CSS includes `env(safe-area-inset-*)` support for notched devices
+- The mobile CSS handles insets via `--safe-*` variables (native Android 15 insets injected by `MainActivity`, falling back to `env(safe-area-inset-*)` on iOS) — see the Android 15 Edge-to-Edge section
 - `Holiday-Currency-Converter.html` is a legacy prototype with no auth or AWS integration — it is not part of the production app
 - Custom currencies are stored locally only; purchased currencies cannot currently be restored from the server after a reinstall or on a new device
 - PayPal is currently in **live mode** — real payments are taken. To test without charging, temporarily switch the active SDK `<script>` tag in `add-currency.html` back to the sandbox `client-id` (and re-show the `#sandboxWarning` banner) using the commented alternatives in the file
